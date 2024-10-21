@@ -33,7 +33,7 @@
 					<td width="20%"><?php echo esc_html( $result->date ); ?></td>
 					<td width="20%">
                         <?php if ( ! empty($convert_to_object) && $convert_to_object->status = 'err' ) : ?>
-                            <p style="color:red"> <?php echo $convert_to_object->errlog ?> </p>
+                            <p style="color:red"> <?php echo esc_html($convert_to_object->errlog) ?> </p>
                         <?php else : ?>
 						    <a class="button alignright" type="submit" href="<?php echo esc_url( get_admin_url() ); ?>admin.php?page=wc-settings&tab=dpd&section=manifests&admin_ajax_nonce=<?php echo esc_attr( wp_create_nonce( 'admin-nonce' ) ); ?>&download_manifest=<?php echo esc_attr( $result->id ); ?>"><?php esc_html_e( 'Download', 'woo-shipping-dpd-baltic' ); ?></a>
                         <?php endif; ?>

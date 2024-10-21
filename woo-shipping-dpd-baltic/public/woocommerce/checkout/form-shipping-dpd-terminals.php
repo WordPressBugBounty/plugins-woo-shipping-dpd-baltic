@@ -31,7 +31,7 @@
                             <?php endif; ?>
                         <?php endforeach; ?>
                     <?php endforeach; ?>
-                    <div id="load-more-btn" class="<?= $load_more_page != -1 ? '' : 'hidden'; ?>" load-more-page="<?php echo $load_more_page; ?>"><span class="load-more button">Load More<span></div>
+                    <div id="load-more-btn" class="<?= $load_more_page != -1 ? '' : 'hidden'; ?>" load-more-page="<?php echo esc_html($load_more_page); ?>"><span class="load-more button">Load More<span></div>
                 <?php endif; ?>
             </ul>
         </div>

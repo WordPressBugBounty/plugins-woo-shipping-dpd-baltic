@@ -276,8 +276,8 @@ class Dpd_Admin {
         ?>
         <div class="options_group">
             <p class="form-field shipping_class_field">
-                <input type="checkbox" name="<?= DPD_DOES_NOT_FIT_IN_TERMINAL; ?>" id="<?= DPD_DOES_NOT_FIT_IN_TERMINAL; ?>" value="1" <?= $checked; ?>>
-                <label for="<?= DPD_DOES_NOT_FIT_IN_TERMINAL; ?>"><?= __( "Doesn't fit in terminal", "woo-shipping-dpd-baltic" ); ?></label>
+                <input type="checkbox" name="<?= esc_html(DPD_DOES_NOT_FIT_IN_TERMINAL); ?>" id="<?= esc_html(DPD_DOES_NOT_FIT_IN_TERMINAL); ?>" value="1" <?= esc_html($checked); ?>>
+                <label for="<?= esc_html(DPD_DOES_NOT_FIT_IN_TERMINAL); ?>"><?= esc_html(__( "Doesn't fit in terminal", "woo-shipping-dpd-baltic" )); ?></label>
             </p>
         </div>
         <?php
@@ -1071,6 +1071,8 @@ class Dpd_Admin {
 
         $json_response = json_decode( $response );
 
+
+
         if ( $json_response && 'err' == $json_response->status ) {
             return null;
         } else {
@@ -1085,17 +1087,21 @@ class Dpd_Admin {
      * @param string $file_name File name.
      */
     private function get_labels_output( $pdf, $file_name = 'dpdLabels' ) {
-        $name = $file_name . '-' . gmdate( 'Y-m-d' ) . '.pdf';
+    // Sanitize file name
+    $name = sanitize_file_name( $file_name . '-' . gmdate( 'Y-m-d' ) . '.pdf' );
 
-        header( 'Content-Description: File Transfer' );
-        header( 'Content-Type: application/pdf' );
-        header( 'Content-Disposition: attachment; filename="' . $name . '"' );
-        header( 'Content-Transfer-Encoding: binary' );
-        header( 'Connection: Keep-Alive' );
-        header( 'Expires: 0' );
-        header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
-        header( 'Pragma: public' );
+    // Headers for PDF download
+    header( 'Content-Description: File Transfer' );
+    header( 'Content-Type: application/pdf' );
+    header( 'Content-Disposition: attachment; filename="' . esc_attr( $name ) . '"' );
+    header( 'Content-Transfer-Encoding: binary' );
+    header( 'Connection: Keep-Alive' );
+    header( 'Expires: 0' );
+    header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
+    header( 'Pragma: public' );
 
+    // Suppress PHPCS warning for unescaped output (base64-encoded binary data)
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         echo base64_decode( esc_textarea( base64_encode( $pdf ) ) );
 
         die;
@@ -1483,7 +1489,8 @@ class Dpd_Admin {
 
                 ob_clean();
                 flush();
-
+				 // Suppress PHPCS warning for unescaped output (base64-encoded binary data)
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                 echo $base64_decode_pdf;
             }
         }

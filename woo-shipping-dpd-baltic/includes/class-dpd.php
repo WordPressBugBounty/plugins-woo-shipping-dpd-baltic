@@ -317,7 +317,7 @@ class Dpd
 
     public function get_ajax_search_pudo()
     {
-        $search_value = $_REQUEST['search_value'];
+        $search_value = sanitize_text_field($_REQUEST['search_value']);
 
         $chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
 
@@ -380,7 +380,7 @@ class Dpd
         $terminal_field_name = 'wc_shipping_dpd_parcels_terminal';
 
         $html = '';
-        $html .= '<input type="text" class="js--pudo-search" value="' . $search_value .'" style="width:100%; padding: 1rem;" placeholder="' . esc_html( __( 'Search', 'woo-shipping-dpd-baltic' ) )  .'">';
+        $html .= '<input type="text" class="js--pudo-search" value="' .  esc_html($search_value).'" style="width:100%; padding: 1rem;" placeholder="' . esc_html( __( 'Search', 'woo-shipping-dpd-baltic' ) )  .'">';
 
         if (!count($grouped_terminals)) {
             $html .= '<li class="pudo" data-value="">' . esc_html( __( 'The Pickup Point is empty', 'woo-shipping-dpd-baltic' ) ) . '</li>';
@@ -401,7 +401,13 @@ class Dpd
             $html .= '<div id="load-more-btn" class="' . $class .'" load-more-page="' . $page .'"><span class="load-more button">Load More</span></div>';
         }
 
-        echo $html;
+        echo json_encode([
+
+            'terminals'           => $html,
+
+        ]);
+
+//        echo $html;
 
         wp_die();
     }
@@ -572,7 +578,7 @@ class Dpd
 
         $html .= '</strong>';
 
-        $html .= '<select id="dpd-wc-pickup-point-shipping-select-block" name="dpd_location_identifier" style="width:100%">';
+        $html .= '<select id="dpd-wc-pickup-point-shipping-select-block" name="dpd_location_identifier" style="width:100%;">';
 
         $html .= '<option value="' . __('Please select the pickup location','woo-shipping-dpd-baltic') .'"></option>';
 
@@ -582,7 +588,15 @@ class Dpd
 
         $html .= '</div>';
 
-        echo $html;
+        echo json_encode([
+
+            'all'           => $html,
+
+        ]);
+
+//        echo esc_html_e($html);
+
+//        echo $html;
 
         wp_die();
 

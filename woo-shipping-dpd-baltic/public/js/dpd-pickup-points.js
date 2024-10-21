@@ -13,8 +13,11 @@ function timedCount() {
                     data: {
                         action: 'load_additional_block'
                     },
+                    dataType: 'json',
                     success: function(response) {
-                        $('body .wc-block-components-shipping-rates-control__package').append(response);
+                        console.log(response.all);
+                        $('body .wc-block-components-shipping-rates-control__package').append(response.all);
+                        // $('#dpd-wc-pickup-point-shipping-block').show();
                     },
                     error: function(error) {
                         console.error('Error loading additional block:', error);

@@ -51,6 +51,7 @@ class Dpd_Admin_Extended_For_Wc_Hpos_Mode extends Dpd_Admin
         $ids = array_map('absint', $ids);
         $changed = 0;
         $report_action = '';
+
         if ('dpd_print_parcel_label' === $action) {
             $report_action = 'dpd_printed_parcel_label';
             $result = $this->do_multiple_print_parcel_label($ids);

@@ -46,9 +46,9 @@
 						//     }
 						// };
 						var options = []
-						if( data ) {
+						if( data.terminals ) {
 							// data is the array of arrays with an ID and a label of the option
-							$.each( data, function( index, text ) {
+							$.each( data.terminals, function( index, text ) {
 								options.push( { id: text['parcelshop_id'], text: text['company'] + ' ' + text['street']+ ' ' + text['city'] + ' ' + text['country'] + '-' + text['pcode'], cod: text['cod'], value:text['parcelshop_id'] } )
 							})
 						}
@@ -145,9 +145,9 @@
 									//     }
 									// };
 									var options = []
-									if( data ) {
+									if( data.terminals ) {
 										// data is the array of arrays with an ID and a label of the option
-										$.each( data, function( index, text ) {
+										$.each( data.terminals, function( index, text ) {
 											options.push( { id: text['parcelshop_id'], text: text['company'] + ' ' + text['street']+ ' ' + text['city'] + ' ' +text['country']+ '-' + text['pcode'], cod: text['cod'], value:text['parcelshop_id'] } )
 										})
 									}
@@ -232,9 +232,9 @@
 								//     }
 								// };
 								var options = []
-								if( data ) {
+								if( data.terminals ) {
 									// data is the array of arrays with an ID and a label of the option
-									$.each( data, function( index, text ) {
+									$.each( data.terminals, function( index, text ) {
 										options.push( { id: text['parcelshop_id'], text: text['company'] + ' ' + text['street']+ ' ' + text['city'] + ' ' +text['country']+ '-' + text['pcode'], cod: text['cod'], value:text['parcelshop_id'] } )
 									})
 								}
@@ -355,9 +355,10 @@
 						action: 'search_pudo',
 						search_value: search_value,
 					},
+					dataType: 'json',
 					success: function(response) {
 						$('.custom-dropdown .dropdown-list').empty();
-						$('.custom-dropdown .dropdown-list').append(response);
+						$('.custom-dropdown .dropdown-list').append(response.terminals);
 						$('.custom-dropdown .js--pudo-search').focus().val('').val(search_value);
 					},
 					error: function(error) {
