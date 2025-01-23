@@ -295,6 +295,24 @@
 			'change',
 			"[name='wc_shipping_dpd_home_delivery_shifts']",
 			function() {
+				var delivery_shifts = $(this).val();
+
+				if ($("body").hasClass('theme-Divi')) {
+					$.ajax({
+						url: '/wp-admin/admin-ajax.php',
+						type: 'POST',
+						data: {
+							action: 'set_delivery_shifts',
+							delivery_shifts: delivery_shifts,
+						},
+						dataType: 'json',
+						success: function(response) {
+						},
+						error: function(error) {
+							console.error('AJAX Error:', error);
+						}
+					});
+				}
 				$( document.body ).trigger( "update_checkout" );
 			}
 		);
@@ -322,7 +340,26 @@
 		});
 
 		$( document.body ).on('click', '.custom-dropdown .dropdown-list .pudo', function () {
+
 			var selectedValue = $(this).attr('data-value');
+
+			if ($("body").hasClass('theme-Divi')) {
+				$.ajax({
+					url: '/wp-admin/admin-ajax.php',
+					type: 'POST',
+					data: {
+						action: 'set_terminal_value',
+						selected_value: selectedValue,
+					},
+					dataType: 'json',
+					success: function(response) {
+					},
+					error: function(error) {
+						console.error('AJAX Error:', error);
+					}
+				});
+			}
+
 
 			var dataCOD = $(this).attr('data-cod');
 			var selectedText = $(this).text();

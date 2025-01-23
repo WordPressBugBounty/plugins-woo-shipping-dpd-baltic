@@ -110,6 +110,8 @@
 				left: 10px;
 				right: 10px;
 				text-align: center;
+                background: #dc0032;
+                color: white;
 			}
 		</style>
 

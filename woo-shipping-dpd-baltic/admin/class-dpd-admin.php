@@ -772,6 +772,10 @@ class Dpd_Admin {
             $city   = $this->custom_length( $order->get_shipping_city(), 40 ); // required 1, max length 40.
 
             $country_code = $order->get_shipping_country();
+            if ($country_code == 'GR') {
+                $courier_parcel_type     = 'D';
+                $courier_cod_parcel_type = 'D-COD';
+            }
             if ( strtoupper( $country_code ) == 'LT' || strtoupper( $country_code ) == 'LV' || strtoupper( $country_code ) == 'EE' ) {
                 $pcode = preg_replace( '/[^0-9,.]/', '', $order->get_shipping_postcode() );
             } else {

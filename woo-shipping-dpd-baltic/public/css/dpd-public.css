@@ -71,6 +71,24 @@
     cursor: pointer;
 }
 
+.wc_shipping_dpd_terminals {
+    position: relative;
+}
+.dropdown-list {
+    width: 100%;
+    left: 0;
+}
+
+/*@media (max-width:480px) {*/
+/*    .wc_shipping_dpd_terminals {*/
+/*        position: relative;*/
+/*    }*/
+/*    .dropdown-list {*/
+/*        width: 100%;*/
+/*        left: 0;*/
+/*    }*/
+/*}*/
+
 /*.custom-dropdown .select2 {*/
 /*    width: 100%!important;*/
 /*}*/

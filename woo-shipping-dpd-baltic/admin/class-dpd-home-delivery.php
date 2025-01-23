@@ -342,6 +342,7 @@ class DPD_Home_Delivery extends WC_Shipping_Method {
 	 * @param int $order_id Order id.
 	 */
 	public function checkout_save_order_timeshifts( $order_id ) {
+        $selected_delivery_shifts = WC()->session->get( $this->shifts_field_name );
 
 		if ( ! isset( $_POST['woocommerce-process-checkout-nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ) ), 'woocommerce-process_checkout' ) ) {
 			return;
@@ -354,6 +355,10 @@ class DPD_Home_Delivery extends WC_Shipping_Method {
                 dpd_update_order_meta( $order_id, $this->shifts_field_name, filter_var( $selected_shift, FILTER_SANITIZE_STRING ) );
 			}
 		}
+
+        if ($selected_delivery_shifts) {
+            dpd_update_order_meta( $order_id, $this->shifts_field_name, filter_var( $selected_delivery_shifts, FILTER_SANITIZE_STRING ) );
+        }
 
 	}
 

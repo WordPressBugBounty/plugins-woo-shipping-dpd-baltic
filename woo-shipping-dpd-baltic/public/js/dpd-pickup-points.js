@@ -15,7 +15,6 @@ function timedCount() {
                     },
                     dataType: 'json',
                     success: function(response) {
-                        console.log(response.all);
                         $('body .wc-block-components-shipping-rates-control__package').append(response.all);
                         // $('#dpd-wc-pickup-point-shipping-block').show();
                     },
@@ -26,7 +25,13 @@ function timedCount() {
 
                 var selected_value2 = $('.wc-block-components-radio-control__input:checked').val();
                 var delivery_method = selected_value2.split(":");
-                var country_code = $('#billing-country').val();
+                // var country_code = $('#billing-country').val();
+
+                var country_code = $('#shipping-country').val();
+
+                if(!country_code) {
+                    country_code = $('#billing-country').val();
+                }
 
                 if (delivery_method[0] == 'dpd_parcels' || delivery_method[0] == 'dpd_sameday_parcels') {
                     $.ajax({
@@ -84,7 +89,7 @@ function stopCount() {
                     action: 'load_additional_block'
                 },
                 success: function(response) {
-                    $('body .wc-block-components-shipping-rates-control').append(response);
+                    $('body .wc-block-components-shipping-rates-control').append(response.all);
                 },
                 error: function(error) {
                     console.error('Error loading additional block:', error);
@@ -144,18 +149,22 @@ function stopCount() {
                 }
             });
 
-            $('.wc-block-components-radio-control__input').click(function() {
+            $('.wc-block-components-shipping-rates-control__package .wc-block-components-radio-control__input').click(function() {
                 timedCount();
             });
 
-            $(document).on('click', '.wc-block-components-radio-control__input', function() {
-                timedCount();
-            });
+            //$(document).on('click', '.wc-block-components-shipping-rates-control__package .wc-block-components-radio-control__input', function() {
+                //timedCount();
+            //});
 
             $('#billing-country').on('change', function() {
                 timedCount();
             });
-        }, 700);
+
+            $('#shipping-country').on('change', function() {
+                timedCount();
+            });
+        }, 1100);
 
         setTimeout(function() {
             if ($(".wp-block-woocommerce-checkout-fields-block")[0]) {
@@ -188,9 +197,11 @@ function stopCount() {
             });
         });
 
-        timedCount();
+
 
         if ($(".wp-block-woocommerce-checkout-fields-block")[0]) {
+            timedCount();
+        }else {
             timedCount();
         }
     });

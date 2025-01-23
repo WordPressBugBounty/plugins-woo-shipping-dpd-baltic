@@ -278,7 +278,9 @@ class DPD_Parcels extends WC_Shipping_Method {
 		$shipping_country        = WC()->customer === null ? strtolower( get_option( 'woocommerce_default_country' ) ) : strtolower( WC()->customer->get_shipping_country() );
 		$shop_weight_unit        = get_option( 'woocommerce_weight_unit' );
 
-		$countries        = array( 'lt', 'lv', 'ee', 'dk', 'be', 'fi', 'fr', 'de', 'lu', 'nl', 'es', 'se', 'ch', 'gb', 'pl', 'at', 'cz', 'si', 'sk', 'hu', 'ie' );
+//		$countries        = array( 'lt', 'lv', 'ee', 'dk', 'be', 'fi', 'fr', 'de', 'lu', 'nl', 'es', 'se', 'ch', 'gb', 'pl', 'at', 'cz', 'si', 'sk', 'hu', 'ie' );
+
+        $countries        = array( 'lt', 'lv', 'ee', 'dk', 'be', 'fi', 'fr', 'de', 'lu', 'nl', 'es', 'se', 'ch', 'pl', 'at', 'cz', 'si', 'sk', 'hu', 'ie' );
 		$countries_baltic = array( 'lt', 'lv', 'ee' );
 		$countries_pt     = 'pt';
 
@@ -449,6 +451,12 @@ class DPD_Parcels extends WC_Shipping_Method {
 	 * @param array $data Data.
 	 */
 	public function checkout_save_order_terminal( $order_id, $data ) {
+        $selected_terminal_value = WC()->session->get( 'terminal');
+
+        if ($selected_terminal_value) {
+            $this->terminal_field_value = $selected_terminal_value;
+        }
+
 		if ( isset( $this->terminal_field_value ) ) {
             dpd_update_order_meta( $order_id, $this->terminal_field_name, $this->terminal_field_value );
 			$this->save_order_terminal_field_name( $order_id );
@@ -481,6 +489,14 @@ class DPD_Parcels extends WC_Shipping_Method {
 		$this->terminal_field_value = isset( $_POST[ $this->terminal_field_name ] )
 			? sanitize_text_field( wp_unslash( $_POST[ $this->terminal_field_name ] ) )
 			: null;
+
+        $selected_terminal_value = WC()->session->get( 'terminal');
+
+        if ($selected_terminal_value) {
+            $this->terminal_field_value = $selected_terminal_value;
+        }
+
+
 
 		if ( isset( $_POST[ $this->terminal_field_name ] ) && '' == $_POST[ $this->terminal_field_name ] ) {
 			// Be sure shipping method was posted.

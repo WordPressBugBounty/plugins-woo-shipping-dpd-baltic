@@ -313,6 +313,37 @@ class Dpd
         $this->loader->add_action('wp_ajax_search_pudo', $this, 'get_ajax_search_pudo');
         $this->loader->add_action('wp_ajax_nopriv_search_pudo', $this, 'get_ajax_search_pudo');
 
+        $this->loader->add_action('wp_ajax_set_terminal_value', $this, 'get_ajax_terminal_value');
+        $this->loader->add_action('wp_ajax_nopriv_set_terminal_value', $this, 'get_ajax_terminal_value');
+
+        $this->loader->add_action('wp_ajax_set_delivery_shifts', $this, 'set_ajax_delivery_shifts');
+        $this->loader->add_action('wp_ajax_nopriv_set_delivery_shifts', $this, 'set_ajax_delivery_shifts');
+
+    }
+
+    public function set_ajax_delivery_shifts()
+    {
+        $selected_delivery_shift_value = sanitize_text_field($_REQUEST['delivery_shifts']);
+
+        WC()->session->set( 'wc_shipping_dpd_home_delivery_shifts', $selected_delivery_shift_value );
+    }
+
+    public function get_ajax_terminal_value()
+    {
+        $selected_terminal_value = sanitize_text_field($_REQUEST['selected_value']);
+
+        global $wpdb;
+
+        $terminal = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE parcelshop_id = %s", $selected_terminal_value ) );
+
+        $terminal = json_decode(json_encode($terminal), true);
+
+
+
+        $terminal_name = $terminal[0]['company'] . ',' . $terminal[0]['street'];
+
+        WC()->session->set( 'terminal', $selected_terminal_value );
+        WC()->session->set( 'terminal_name', $terminal_name );
     }
 
     public function get_ajax_search_pudo()
@@ -501,11 +532,13 @@ class Dpd
     {
         global $wpdb;
 
-        if ( WC()->customer->get_shipping_country()) {
-            $country = WC()->customer->get_shipping_country();
-        }else {
-            $country = false;
-        }
+        $country = $_REQUEST['country_code'];
+
+//        if ( WC()->customer->get_shipping_country()) {
+//            $country = WC()->customer->get_shipping_country();
+//        }else {
+//            $country = false;
+//        }
 
         if ( $country ) {
             $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s ORDER BY city", $country ) );

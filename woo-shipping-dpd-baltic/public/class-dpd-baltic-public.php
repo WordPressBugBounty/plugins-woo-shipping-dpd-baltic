@@ -15,13 +15,13 @@ add_action(
 	<script>
 
 			<?php
-			if ( is_checkout() ) {
+			//if ( is_checkout() ) {
 				?>
-		        jQuery(document).on( 'change', '.wc_payment_methods input[name="payment_method"]', function() {
-					jQuery('body').trigger('update_checkout');
-				});
+		        // jQuery(document).on( 'change', '.wc_payment_methods input[name="payment_method"]', function() {
+				// 	jQuery('body').trigger('update_checkout');
+				// });
 				<?php
-			}
+			//}
 			?>
 	</script>
 			<?php
@@ -142,7 +142,8 @@ class Dpd_Baltic_Public {
 
 		if ( '' !== $google_map_api ) {
 			wp_enqueue_script( 'dpd-gmaps-markerclusterer', plugin_dir_url( __FILE__ ) . 'js/dpd-gmaps-markerclusterer-dist.js', array( 'jquery' ), $this->version, true );
-			wp_enqueue_script( 'dpd-parcel', plugin_dir_url( __FILE__ ) . 'js/dpd-parcel-dist.js', array( 'jquery' ), $this->version, true );
+//			wp_enqueue_script( 'dpd-parcel', plugin_dir_url( __FILE__ ) . 'js/dpd-parcel-dist.js', array( 'jquery' ), $this->version, true );
+            wp_enqueue_script( 'dpd-parcel', plugin_dir_url( __FILE__ ) . 'js/dpd-parcel.js', array( 'jquery' ), $this->version, true );
 			wp_enqueue_script( 'google-maps-api', 'https://maps.googleapis.com/maps/api/js?key=' . $google_map_api, array( 'jquery' ), $this->version, true );
 
 

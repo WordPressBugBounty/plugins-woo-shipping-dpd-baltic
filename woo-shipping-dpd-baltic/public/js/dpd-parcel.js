@@ -367,7 +367,6 @@ var dpd_parcel_map = {};
 
 	function initMap() {
 		onSearchLocationClick( null );
-
 		if (navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition(
 				function(position) {
@@ -382,6 +381,10 @@ var dpd_parcel_map = {};
 			);
 		} else {
 			// Browser doesn't support Geolocation
+			dpd_parcel_map.my_location = {lat:54.8897105, lng: 23.9258975};
+		}
+
+		if (!dpd_parcel_map.my_location ) {
 			dpd_parcel_map.my_location = {lat:54.8897105, lng: 23.9258975};
 		}
 
