@@ -291,6 +291,10 @@ class Dpd_Baltic_Public {
 				}
 
 				switch ( WC()->customer->get_shipping_country() ) {
+
+                    case 'PL':
+                        $max_total = 1000;
+                        break;
 					case 'LT':
 						$max_total = 1000;
 						break;

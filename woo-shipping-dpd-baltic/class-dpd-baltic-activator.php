@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS {$wpdb->prefix}dpd_terminals (
   company varchar(40) NOT NULL DEFAULT '',
   country varchar(2) NOT NULL DEFAULT '',
   city varchar(40) NOT NULL DEFAULT '',
-  pcode varchar(5) NOT NULL DEFAULT '',
+  pcode varchar(6) NOT NULL DEFAULT '',
   street varchar(40) NOT NULL DEFAULT '',
   email varchar(30) NULL,
   phone varchar(30) NULL,

@@ -350,6 +350,14 @@ class Dpd
     {
         $search_value = sanitize_text_field($_REQUEST['search_value']);
 
+
+
+
+//        if (strpos($search_value, ' ') !== false && strpos($search_value, 'g.') === false) {
+//            $search_value_array = explode(" ", $search_value);
+//            $search_value = $search_value_array[0] . ' g. ' . $search_value_array[1];
+//        }
+
         $chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
 
         $limit = 100;
@@ -364,13 +372,15 @@ class Dpd
 
 
         $country = WC()->customer->get_shipping_country();
+
+
         if ( $country ) {
             if (!in_array($country, $countries)) {
                 dpd_debug_log("FRONT-STORE: CHECKOUT PROCESS - no selected country is matching with countries in settings");
                 return [];
             }
 
-            $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND (company like %s or city LIKE %s or street like %s or pcode like %s) AND status = 1 ORDER BY company LIMIT %d OFFSET %d", $country, '%' . $wpdb->esc_like( $search_value ) . '%', $wpdb->esc_like( $search_value ) . '%', '%' . $wpdb->esc_like( $search_value ) . '%', '%' . $wpdb->esc_like( $search_value ) . '%', $items_per_page, $offset ) );
+            $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND (company like %s or city LIKE %s or street like %s or pcode like %s) AND status = 1 ORDER BY company LIMIT %d OFFSET %d", $country, '%' . $wpdb->esc_like( $search_value ) . '%', $wpdb->esc_like( $search_value ) . '%', '%' .$wpdb->esc_like( $search_value ) . '%', '%' . $wpdb->esc_like( $search_value ) . '%', $items_per_page, $offset ) );
             dpd_debug_log(sprintf("FRONT-STORE: CHECKOUT PROCESS - total terminals match with selected country: %d", is_countable($terminals) ? count( $terminals ) : -1));
         } else {
             $terminals = $wpdb->get_results( $wpdb->prepare("SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE status = 1 AND (company like %s or city LIKE %s or street like %s or pcode like %s) ORDER BY company LIMIT %d OFFSET %d", '%' . $wpdb->esc_like( $search_value ) . '%', $wpdb->esc_like( $search_value ) . '%', '%' . $wpdb->esc_like( $search_value ) . '%', '%' . $wpdb->esc_like( $search_value ) . '%', $items_per_page, $offset));
@@ -411,7 +421,7 @@ class Dpd
         $terminal_field_name = 'wc_shipping_dpd_parcels_terminal';
 
         $html = '';
-        $html .= '<input type="text" class="js--pudo-search" value="' .  esc_html($search_value).'" style="width:100%; padding: 1rem;" placeholder="' . esc_html( __( 'Search', 'woo-shipping-dpd-baltic' ) )  .'">';
+//        $html .= '<input type="text" class="js--pudo-search" value="' .  esc_html($search_value).'" style="width:100%; padding: 1rem;" placeholder="' . esc_html( __( 'Search', 'woo-shipping-dpd-baltic' ) )  .'">';
 
         if (!count($grouped_terminals)) {
             $html .= '<li class="pudo" data-value="">' . esc_html( __( 'The Pickup Point is empty', 'woo-shipping-dpd-baltic' ) ) . '</li>';
@@ -437,8 +447,6 @@ class Dpd
             'terminals'           => $html,
 
         ]);
-
-//        echo $html;
 
         wp_die();
     }

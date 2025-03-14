@@ -31,20 +31,6 @@
 						};
 					},
 					processResults: function (data, params) {
-						// console.log(data);
-						// console.log(data.total_count);
-						// parse the results into the format expected by Select2
-						// since we are using custom formatting functions we do not need to
-						// alter the remote JSON data, except to indicate that infinite
-						// scrolling can be used
-						// params.page = params.page || 1;
-						//
-						// return {
-						//     results: data,
-						//     pagination: {
-						//         more: (params.page * 30) < data.total_count
-						//     }
-						// };
 						var options = []
 						if( data.terminals ) {
 							// data is the array of arrays with an ID and a label of the option
@@ -318,6 +304,36 @@
 		);
 	}
 
+	function setInputValue(input, value) {
+		input.value = value; // Nustatome reikšmę
+		input.focus(); // Fokusavimas, jei reikia
+		setTimeout(() => {
+			input.setSelectionRange(value.length, value.length); // Perkeliame žymeklį į pabaigą
+		}, 0); // Leidžiame DOM atnaujinti reikšmę
+	}
+
+	function debounce(func, delay) {
+		let timer;
+		return function (...args) {
+			clearTimeout(timer);
+			timer = setTimeout(() => func.apply(this, args), delay);
+		};
+	}
+
+	function setInputValueSafely(input, value) {
+		let currentValue = input.value;
+		let selectionStart = input.selectionStart; // Išsaugome žymeklio vietą
+
+		if (currentValue !== value) { // Tik jei reikšmė skiriasi
+			input.value = value;
+
+			// Naudojame `requestAnimationFrame`, kad užtikrintume žymeklio perkėlimą po DOM atnaujinimo
+			requestAnimationFrame(() => {
+				input.setSelectionRange(value.length, value.length); // Perkeliame žymeklį į pabaigą
+			});
+		}
+	}
+
 	function pudoSelection() {
 		const parcelsTerminalElement = $('#wc_shipping_dpd_parcels_terminal');
 		const selectedValueDefault = parcelsTerminalElement.val();
@@ -375,61 +391,83 @@
 
 		var keyTimer = null;
 
-		// keyup change paste keyup
-		$( document).on('input', '.custom-dropdown .js--pudo-search', function () {
-			if (keyTimer) { // Cancel a previous timer
-				clearTimeout(keyTimer);
+		let currentRequest = null;
+
+		$(document).on('input', '.custom-dropdown .js--pudo-search', debounce(function () {
+			var search_value = $(this).val().trim();  // Get the input value
+			// var search_value = $(this).val();
+
+			// // If there's an ongoing AJAX request, cancel it
+			if (currentRequest) {
+				currentRequest.abort();
 			}
-			var search_value = $(this).val();
 
-			keyTimer = setTimeout(function() { // Start a new timer
-				keyTimer = null;
-				// AJAX call...
-				$.ajax({
-					url: '/wp-admin/admin-ajax.php',
-					type: 'POST',
-					data: {
-						action: 'search_pudo',
-						search_value: search_value,
-					},
-					dataType: 'json',
-					success: function(response) {
-						$('.custom-dropdown .dropdown-list').empty();
-						$('.custom-dropdown .dropdown-list').append(response.terminals);
-						$('.custom-dropdown .js--pudo-search').focus().val('').val(search_value);
-					},
-					error: function(error) {
-						console.error('AJAX Error:', error);
-					}
-				});
-			}, 400); // Wait at least 200ms
+			// Only trigger AJAX if there's input (optional)
+			currentRequest = $.ajax({
+				url: '/wp-admin/admin-ajax.php',
+				type: 'POST',
+				data: {
+					action: 'search_pudo',
+					search_value: search_value,
+				},
+				dataType: 'json',
+				success: function(response) {
+					// Handle the response and update the dropdown
+					$('.custom-dropdown .dropdown-list .dropdown-list-search-list').empty().append(response.terminals);
 
+					// $('.custom-dropdown .js--pudo-search').val(search_value);
 
-		});
+					// Focus the input and move the cursor to the end of the value
+					// var inputField = $('.custom-dropdown .js--pudo-search')[0];
+					// inputField.focus();
+					// inputField.setSelectionRange(inputField.value.length, inputField.value.length); // Move cursor to the end
+					// var inputField = $('.custom-dropdown .js--pudo-search')[0];
+					// inputField.focus();
+					// inputField.setSelectionRange(inputField.value.length, inputField.value.length);
+				},
+				error: function(error) {
+					console.error('AJAX Error:', error);
+				}
+			});
+		}, 100));
 
-		// $( document).on('change paste keyup', '.custom-dropdown .js--pudo-search', debounce(function(){
-		// 	var search_value = $(this).val();
+		// keyup change paste keyup
+		// $( document).on('input', '.custom-dropdown .js--pudo-search', function () {
+		// 	if (keyTimer) { // Cancel a previous timer
+		// 		clearTimeout(keyTimer);
+		// 	}
+		// 	let search_value = $(this).val();
 		//
-		// 	$.ajax({
-		// 		url: '/wp-admin/admin-ajax.php',
-		// 		type: 'POST',
-		// 		data: {
-		// 			action: 'search_pudo',
-		// 			search_value: search_value,
-		// 		},
-		// 		success: function(response) {
-		// 			$('.custom-dropdown .dropdown-list').empty();
-		// 			$('.custom-dropdown .dropdown-list').append(response);
-		// 			$('.custom-dropdown .js--pudo-search').click();
-		// 		},
-		// 		error: function(error) {
-		// 			console.error('AJAX Error:', error);
-		// 		}
-		// 	});
-		// }, 500));
-		// $('input').on('keyup', debounce(function(){
-		// ...
-		// },500));
+		// 	keyTimer = setTimeout(function() { // Start a new timer
+		// 		keyTimer = null;
+		// 		// AJAX call...
+		// 		$.ajax({
+		// 			url: '/wp-admin/admin-ajax.php',
+		// 			type: 'POST',
+		// 			data: {
+		// 				action: 'search_pudo',
+		// 				search_value: search_value,
+		// 			},
+		// 			dataType: 'json',
+		// 			success: function(response) {
+		// 				$('.custom-dropdown .dropdown-list').empty();
+		// 				$('.custom-dropdown .dropdown-list').append(response.terminals);
+		//
+		//
+		// 				// let input = document.querySelector('.custom-dropdown .js--pudo-search');
+		// 				// setInputValue(input, search_value); // Nustatome reikšmę be klaidų
+		// 				// $('.custom-dropdown .js--pudo-search').val('').val(search_value).focus();
+		// 				// $('.custom-dropdown .js--pudo-search').focus().val('').val(search_value);
+		// 				// $('.custom-dropdown .js--pudo-search').focus().val('').val(search_value);
+		// 			},
+		// 			error: function(error) {
+		// 				console.error('AJAX Error:', error);
+		// 			}
+		// 		});
+		// 	}, 400); // Wait at least 200ms
+		//
+		//
+		// });
 
 		// $( document.body ).on('change', '.custom-dropdown .pickup-points-classic-select2', function () {
 		// 	var selectedValue = $(".pickup-points-classic-select2 option:selected").attr('data-value');

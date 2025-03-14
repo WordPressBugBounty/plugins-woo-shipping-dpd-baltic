@@ -460,6 +460,13 @@ class DPD_Parcels extends WC_Shipping_Method {
 		if ( isset( $this->terminal_field_value ) ) {
             dpd_update_order_meta( $order_id, $this->terminal_field_name, $this->terminal_field_value );
 			$this->save_order_terminal_field_name( $order_id );
+
+            $selected_terminal_value_session = WC()->session->get('terminal');
+
+            if ($selected_terminal_value_session) {
+                WC()->session->__unset('terminal');
+                WC()->session->__unset('terminal_name');
+            }
 		}
 	}
 
@@ -507,6 +514,13 @@ class DPD_Parcels extends WC_Shipping_Method {
 				}
 			}
 		}
+
+        if(!$this->terminal_field_value) {
+            $chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+            if ( substr( $chosen_shipping_methods[0], 0, strlen( $this->id ) ) === $this->id ) {
+                $errors->add( 'shipping', __( 'Please select a Pickup Point', 'woo-shipping-dpd-baltic' ) );
+            }
+        }
 	}
 
 	/**

@@ -14,7 +14,7 @@
  * @wordpress-plugin
  * Plugin Name:       DPD Baltic Shipping
  * Description:       DPD baltic shipping plugin for WooCommerce.
- * Version:           1.2.85
+ * Version:           1.2.86
  * Author:            DPD
  * Author URI:        https://dpd.com
  * License:           GPL-2.0+
@@ -22,9 +22,9 @@
  * Text Domain:       woo-shipping-dpd-baltic
  * Domain Path:       /languages
  * Requires at least: 6.0
- * Tested up to: 6.7.1
+ * Tested up to: 6.7.2
  * WC requires at least: 8.2.0
- * WC tested up to: 9.6.0
+ * WC tested up to: 9.7.1
  */
 
 // If this file is called directly, abort.

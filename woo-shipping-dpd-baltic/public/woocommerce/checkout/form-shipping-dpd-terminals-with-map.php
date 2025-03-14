@@ -29,11 +29,12 @@
 				overflow: auto;
 				background-color: rgb(0,0,0);
 				background-color: rgba(0,0,0,0.4);
-				font-size: 14px;
+				/*font-size: 14px;*/
+                font-size: 11px;
 			}
 
 			#dpd-parcel-modal h3 {
-				font-size: 18px;
+				font-size: 16px;
 			}
 
 			#dpd-parcel-modal .modal-content {
@@ -106,7 +107,8 @@
 
 			#dpd-parcel-modal-info .select-terminal {
 				position: absolute;
-				bottom: 10px;
+				/*bottom: 10px;*/
+                bottom: 30px;
 				left: 10px;
 				right: 10px;
 				text-align: center;

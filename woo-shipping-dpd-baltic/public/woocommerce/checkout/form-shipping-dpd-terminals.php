@@ -19,19 +19,25 @@
                 <div class="selected-option"><?= esc_html( __( 'Choose a Pickup Point', 'woo-shipping-dpd-baltic' ) ); ?></div>
             <?php endif; ?>
             <ul class="dropdown-list">
-                <input type="text" class="js--pudo-search" style="width: 100%; padding: 1rem;" placeholder="<?php echo esc_html( __( 'Search', 'woo-shipping-dpd-baltic' ) ); ?>">
+                <div class="dropdown-list-search-input">
+                    <input type="text" class="js--pudo-search" style="width: 100%; padding: 1rem;" placeholder="<?php echo esc_html( __( 'Search', 'woo-shipping-dpd-baltic' ) ); ?>">
+                </div>
+
                 <?php if( !count( $terminals ) ) : ?>
                     <li class="pudo" data-value=""><?= esc_html( __( 'The Pickup Point is empty', 'woo-shipping-dpd-baltic' ) ); ?></li>
                 <?php else : ?>
-                    <?php foreach ( $terminals as $group_name => $locations ) : ?>
-                        <li class="group-pudo"><?php echo esc_html( $group_name ); ?></li>
-                        <?php foreach ( $locations as $location ) : ?>
-                            <?php if ( $location->status == '1' ) : ?>
-                                <li class="pudo" data-cod="<?php echo esc_attr( $location->cod ); ?>" data-value="<?php echo esc_html( $location->parcelshop_id ); ?>"><?php echo esc_html( $location->name ); ?></li>
-                            <?php endif; ?>
+                    <div class="dropdown-list-search-list">
+                        <?php foreach ( $terminals as $group_name => $locations ) : ?>
+                            <li class="group-pudo"><?php echo esc_html( $group_name ); ?></li>
+                            <?php foreach ( $locations as $location ) : ?>
+                                <?php if ( $location->status == '1' ) : ?>
+                                    <li class="pudo" data-cod="<?php echo esc_attr( $location->cod ); ?>" data-value="<?php echo esc_html( $location->parcelshop_id ); ?>"><?php echo esc_html( $location->name ); ?></li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
                         <?php endforeach; ?>
-                    <?php endforeach; ?>
-                    <div id="load-more-btn" class="<?= $load_more_page != -1 ? '' : 'hidden'; ?>" load-more-page="<?php echo esc_html($load_more_page); ?>"><span class="load-more button">Load More<span></div>
+                        <div id="load-more-btn" class="<?= $load_more_page != -1 ? '' : 'hidden'; ?>" load-more-page="<?php echo esc_html($load_more_page); ?>"><span class="load-more button">Load More<span></div>
+                    </div>
+
                 <?php endif; ?>
             </ul>
         </div>
