@@ -55,6 +55,18 @@ class Dpd_Baltic_Ajax {
 			$terminal       = filter_var( wp_unslash( $_POST['terminal'] ), FILTER_SANITIZE_STRING );
 
 			WC()->session->set( wc_clean( $terminal_field ), wc_clean( $terminal ) );
+
+            global $wpdb;
+
+            $terminal_session = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE parcelshop_id = %s", $terminal ) );
+
+            $terminal_session = json_decode(json_encode($terminal_session), true);
+
+            $terminal_name_session = $terminal_session[0]['company'] . ',' . $terminal_session[0]['street'];
+
+
+            WC()->session->set( 'terminal', $terminal );
+            WC()->session->set( 'terminal_name', $terminal_name_session );
 		}
 
 		if ( isset( $_REQUEST['cod'] ) ) {

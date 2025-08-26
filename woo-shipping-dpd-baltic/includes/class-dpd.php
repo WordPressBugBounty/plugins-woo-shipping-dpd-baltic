@@ -242,7 +242,7 @@ class Dpd
         $this->loader->add_action('woocommerce_admin_process_product_object', $plugin_admin, 'dpdCustomSaveShippingCustomField', 10, 1);
 
         // Declaring extension (in)compatibility HPOS
-        $this->loader->add_action('before_woocommerce_init', $plugin_admin, 'dpdDeclaringExtensionCompatibilityHPOS');
+//        $this->loader->add_action('before_woocommerce_init', $plugin_admin, 'dpdDeclaringExtensionCompatibilityHPOS');
 
         add_action('admin_notices', 'dpd_baltic_display_flash_notices', 12);
 
@@ -318,6 +318,7 @@ class Dpd
 
         $this->loader->add_action('wp_ajax_set_delivery_shifts', $this, 'set_ajax_delivery_shifts');
         $this->loader->add_action('wp_ajax_nopriv_set_delivery_shifts', $this, 'set_ajax_delivery_shifts');
+
 
     }
 

@@ -776,9 +776,13 @@ class Dpd_Admin {
                 $courier_parcel_type     = 'D';
                 $courier_cod_parcel_type = 'D-COD';
             }
-            if ( strtoupper( $country_code ) == 'LT' || strtoupper( $country_code ) == 'LV' || strtoupper( $country_code ) == 'EE' ) {
+
+
+            if ( strtoupper( $country_code ) == 'LT' || strtoupper( $country_code ) == 'LV' || strtoupper( $country_code ) == 'EE') {
                 $pcode = preg_replace( '/[^0-9,.]/', '', $order->get_shipping_postcode() );
-            } else {
+            }elseif(strtoupper( $country_code ) == 'IE'){
+                $pcode = preg_replace('/\s+/', '', $order->get_shipping_postcode());
+            }else {
                 $pcode = $order->get_shipping_postcode();
             }
 
