@@ -36,12 +36,33 @@ class DPD_Same_Day_Parcels extends WC_Shipping_Method {
 	 */
 	public $cost_rates = '';
 
+    /**
+     * Price cost
+     *
+     * @var string
+     */
+    public $cost = '';
+
 	/**
 	 * Terminal field value.
 	 *
 	 * @var string
 	 */
 	public $terminal_field_value = '';
+
+    /**
+     * Terminal field name.
+     *
+     * @var string
+     */
+    public $terminal_field_name = '';
+
+    /**
+     * I18n selected terminal.
+     *
+     * @var string
+     */
+    public $i18n_selected_terminal = '';
 
 	/**
 	 * DpdShippingMethod constructor.

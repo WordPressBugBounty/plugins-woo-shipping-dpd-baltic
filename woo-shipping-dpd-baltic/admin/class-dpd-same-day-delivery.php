@@ -34,6 +34,14 @@ class DPD_Same_Day_Delivery extends WC_Shipping_Method {
 	 *
 	 * @var string
 	 */
+
+    /**
+     * Price cost
+     *
+     * @var string
+     */
+    public $cost = '';
+
 	public $cost_rates = '';
 
 	/**

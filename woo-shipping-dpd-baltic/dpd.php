@@ -14,7 +14,7 @@
  * @wordpress-plugin
  * Plugin Name:       DPD Baltic Shipping
  * Description:       DPD baltic shipping plugin for WooCommerce.
- * Version:           1.2.87
+ * Version:           1.2.89
  * Author:            DPD
  * Author URI:        https://dpd.com
  * License:           GPL-2.0+
@@ -24,7 +24,7 @@
  * Requires at least: 6.0
  * Tested up to: 6.8.3
  * WC requires at least: 8.2.0
- * WC tested up to: 10.0.4
+ * WC tested up to: 10.3.5
  */
 
 // If this file is called directly, abort.
@@ -37,7 +37,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'DPD_NAME_VERSION', '1.2.87' );
+define( 'DPD_NAME_VERSION', '1.2.89' );
 
 /**
  * Currently plugin name.
@@ -57,7 +57,8 @@ define( 'DPD_COMPATIBILITY_WOOCOMMERCE_VERSION', '10.0.4' );
 /**
  * Compatibility HPOS woocommerce version.
  */
-define( 'DPD_COMPATIBILITY_MINIMUM_HPOS_WOOCOMMERCE_VERSION', '8.2.0' );
+//define( 'DPD_COMPATIBILITY_MINIMUM_HPOS_WOOCOMMERCE_VERSION', '8.2.0' );
+define( 'DPD_COMPATIBILITY_MINIMUM_HPOS_WOOCOMMERCE_VERSION', '10.0.0' );
 
 const DPD_DOES_NOT_FIT_IN_TERMINAL = 'dpd_does_not_fit_in_terminal';
 
@@ -70,15 +71,20 @@ function activate_dpd() {
 	Dpd_Baltic_Activator::activate();
 }
 
-add_action( 'before_woocommerce_init', 'rudr_hpos_compatibility' );
+add_action( 'before_woocommerce_init', 'dpd_hpos_compatibility' );
 
 
-function rudr_hpos_compatibility() {
+function dpd_hpos_compatibility() {
     $woocommerce_version = dpd_get_woocommerce_version();
 
     if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-        if($woocommerce_version >= DPD_COMPATIBILITY_MINIMUM_HPOS_WOOCOMMERCE_VERSION){
-            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woo-shipping-dpd-baltic/dpd.php',  false );
+//        if($woocommerce_version >= DPD_COMPATIBILITY_MINIMUM_HPOS_WOOCOMMERCE_VERSION){
+//            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woo-shipping-dpd-baltic/dpd.php',  false );
+//        } else {
+//            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woo-shipping-dpd-baltic/dpd.php', true );
+//        }
+        if (version_compare($woocommerce_version, DPD_COMPATIBILITY_MINIMUM_HPOS_WOOCOMMERCE_VERSION, '>=')) {
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woo-shipping-dpd-baltic/dpd.php',  true );
         } else {
             \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woo-shipping-dpd-baltic/dpd.php', true );
         }

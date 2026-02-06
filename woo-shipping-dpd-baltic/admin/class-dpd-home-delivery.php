@@ -36,6 +36,13 @@ class DPD_Home_Delivery extends WC_Shipping_Method {
 	 */
 	public $cost_rates = '';
 
+    /**
+     * Price cost
+     *
+     * @var string
+     */
+    public $cost = '';
+
 	/**
 	 * Shifts field name.
 	 *

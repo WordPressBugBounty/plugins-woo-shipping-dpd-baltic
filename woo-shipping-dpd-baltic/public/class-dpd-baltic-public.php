@@ -137,7 +137,14 @@ class Dpd_Baltic_Public {
         if (function_exists('is_checkout') && is_checkout()) {
             wp_enqueue_script('wp-dpd-shipping-js', plugins_url('/js/dpd-pickup-points.js', __FILE__),
 
-                ['jquery'], $this->version, true);
+                ['jquery','wp-element', 'wp-data', 'wc-blocks-checkout', 'wc-blocks-data-store'], $this->version, true);
+
+            wp_localize_script('wp-dpd-shipping-js', 'mySettings', [
+                    //'nonce'    => wp_create_nonce('wp_rest')
+                    'nonce'    => wp_create_nonce('wc_store_api'),
+                    'please_select_pickup_point_location' => __('Please select the pickup location', 'woo-shipping-dpd-baltic')
+            ]);
+
         }
 
 		if ( '' !== $google_map_api ) {

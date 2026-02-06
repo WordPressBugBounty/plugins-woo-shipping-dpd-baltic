@@ -79,6 +79,15 @@
     left: 0;
 }
 
+@media (max-width: 768px) {
+    .select2-selection__rendered {
+        white-space: normal!important;
+        overflow: visible!important;
+        text-overflow: unset!important;
+        word-break: break-word!important;
+    }
+}
+
 /*@media (max-width:480px) {*/
 /*    .wc_shipping_dpd_terminals {*/
 /*        position: relative;*/

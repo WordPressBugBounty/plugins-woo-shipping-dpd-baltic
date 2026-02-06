@@ -29,6 +29,13 @@ class DPD_Home_Delivery_Sat extends WC_Shipping_Method {
 	 */
 	public $type = 'order';
 
+    /**
+     * Price cost
+     *
+     * @var string
+     */
+    public $cost = '';
+
 	/**
 	 * Price cost rates.
 	 *

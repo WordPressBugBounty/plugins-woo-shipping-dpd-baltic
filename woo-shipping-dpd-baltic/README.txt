@@ -3,11 +3,11 @@ Contributors: DPD
 Donate link: https://dpd.com
 Tags: woocommerce, shipping, dpd, parcels
 Requires at least: 6.0
-Tested up to: 6.7.2
-Stable tag: 1.2.86
+Tested up to: 6.8.3
+Stable tag: 1.2.89
 Requires PHP: 7.4
 WC requires at least: 8.2.0
-WC tested up to: 9.7.1
+WC tested up to: 10.3.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -92,6 +92,15 @@ LT - 1000 EUR, LV - 1200 EUR, EE - 1278 EUR. If order’s total sum is above thi
 5. Shipping method settings.
 
 == Changelog ==
+
+= 1.2.89 =
+* Fix with php version 8.2
+
+= 1.2.88 =
+* Fix with blocks checkout with reloading pickup points
+
+= 1.2.87 =
+* Fix with HPOS
 
 = 1.2.86 =
 * Fix with search box pickup points

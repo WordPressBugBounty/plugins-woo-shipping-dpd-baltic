@@ -319,7 +319,32 @@ class Dpd
         $this->loader->add_action('wp_ajax_set_delivery_shifts', $this, 'set_ajax_delivery_shifts');
         $this->loader->add_action('wp_ajax_nopriv_set_delivery_shifts', $this, 'set_ajax_delivery_shifts');
 
+        $this->loader->add_action('wp_ajax_update_shipping_by_country', $this,'update_shipping_by_country_callback');
+        $this->loader->add_action('wp_ajax_nopriv_update_shipping_by_country', $this,'update_shipping_by_country_callback');
 
+
+    }
+
+    public function update_shipping_by_country_callback()
+    {
+        check_ajax_referer('custom_shipping_nonce', '_wpnonce');
+
+        if (empty($_POST['country'])) {
+            wp_send_json_error('Country code missing');
+        }
+
+        $country = sanitize_text_field($_POST['country']);
+
+        // Update WooCommerce customer shipping country
+        $customer = WC()->customer;
+        $customer->set_shipping_country($country);
+        $customer->save();
+
+        // Recalculate shipping
+        WC()->cart->calculate_shipping();
+
+        // Send success (React blocks will re-render automatically)
+        wp_send_json_success();
     }
 
     public function set_ajax_delivery_shifts()
@@ -492,38 +517,41 @@ class Dpd
     }
     public function function_test($order) {
 
-        $value = WC()->session->get( 'value');
+        if (WC()->session) {
+            $value = WC()->session->get( 'value');
 
-        $chosen_shipping_method = WC()->session->get( 'chosen_shipping_methods' )[0];
+            $chosen_shipping_method = WC()->session->get( 'chosen_shipping_methods' )[0];
 
-        $word = "parcels";
+            $word = "parcels";
 //        $word = "home_delivery";
 //        $word2 = "sat_home_delivery";
 //        $word3 = "same_day_delivery";
 
 
 
-        if (strpos($chosen_shipping_method, $word) > 0) {
-            if ($value == NULL) {
-                wc_add_notice( __("Please select the pickup location", 'woo-shipping-dpd-baltic'), 'error' );
+            if (strpos($chosen_shipping_method, $word) > 0) {
+                if ($value == NULL) {
+                    wc_add_notice( __("Please select the pickup location", 'woo-shipping-dpd-baltic'), 'error' );
+                }
             }
+
+            global $wpdb;
+
+            $terminal = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE parcelshop_id = %s", $value ) );
+
+            $terminal = json_decode(json_encode($terminal), true);
+
+
+
+            $terminal_name = $terminal[0]['company'] . ',' . $terminal[0]['street'];
+
+            $order->update_meta_data( 'wc_shipping_dpd_parcels_terminal', $value );
+            $order->update_meta_data( 'wc_shipping_dpd_parcels_terminal_name', $terminal_name );
+            $order->save();
+
+            WC()->session->__unset( 'value' );
         }
 
-        global $wpdb;
-
-        $terminal = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE parcelshop_id = %s", $value ) );
-
-        $terminal = json_decode(json_encode($terminal), true);
-
-
-
-        $terminal_name = $terminal[0]['company'] . ',' . $terminal[0]['street'];
-
-        $order->update_meta_data( 'wc_shipping_dpd_parcels_terminal', $value );
-        $order->update_meta_data( 'wc_shipping_dpd_parcels_terminal_name', $terminal_name );
-        $order->save();
-
-        WC()->session->__unset( 'value' );
     }
 
     public function dpd_save_pickup_location()
@@ -539,9 +567,14 @@ class Dpd
      */
     public function checkout_get_pickup_points_blocks_new()
     {
+
         global $wpdb;
 
+
+
         $country = $_REQUEST['country_code'];
+
+
 
 //        if ( WC()->customer->get_shipping_country()) {
 //            $country = WC()->customer->get_shipping_country();
@@ -549,11 +582,16 @@ class Dpd
 //            $country = false;
 //        }
 
-        if ( $country ) {
-            $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s ORDER BY city", $country ) );
+        if ( ! empty( $country ) ) {
+            $sql = $wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s ORDER BY city",
+                $country
+            );
         } else {
-            $terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals ORDER BY city" );
+            $sql = "SELECT * FROM {$wpdb->prefix}dpd_terminals ORDER BY city";
         }
+
+        $terminals = $wpdb->get_results( $sql );
 
         $optionsForSelect2 = [];
 
@@ -594,15 +632,46 @@ class Dpd
             $optionsForSelect2[] = $preparedItem;
         }
 
-        echo json_encode([
-
-            'all'           => $optionsForSelect2,
-
-        ]);
 
 
+        //Pagination new functionality
+        //Old functionality with pagination
+            $page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
+            $per_page = 50;
+            $offset = ($page - 1) * $per_page;
+            $search = isset($_POST['q']) ? sanitize_text_field($_POST['q']) : '';
 
-        wp_die();
+            // Searching
+            if ($search) {
+                $optionsForSelect2 = array_filter($optionsForSelect2, function ($item) use ($search) {
+                    return stripos($item['first_line'], $search) !== false
+                        || stripos($item['second_line'], $search) !== false
+                        || stripos($item['text'], $search) !== false;
+                });
+                $optionsForSelect2 = array_values($optionsForSelect2);
+            }
+
+            $total = count($optionsForSelect2);
+            $paged = array_slice($optionsForSelect2, $offset, $per_page);
+
+            $response = [
+                'results' => $paged,
+                'pagination' => [
+                    'more' => ($offset + $per_page) < $total
+                ]
+            ];
+
+            echo json_encode($response);
+            wp_die();
+
+          //old
+//        echo json_encode([
+//
+//            'all'           => $optionsForSelect2,
+//
+//        ]);
+//
+//        wp_die();
 
 
     }
@@ -630,15 +699,15 @@ class Dpd
 
         $html .= '</div>';
 
-        echo json_encode([
-
-            'all'           => $html,
-
-        ]);
+//        echo json_encode([
+//
+//            'all'           => $html,
+//
+//        ]);
 
 //        echo esc_html_e($html);
 
-//        echo $html;
+        echo $html;
 
         wp_die();
 

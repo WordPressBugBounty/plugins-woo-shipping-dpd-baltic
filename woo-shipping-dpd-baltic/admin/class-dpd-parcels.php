@@ -29,6 +29,13 @@ class DPD_Parcels extends WC_Shipping_Method {
 	 */
 	public $type = 'order';
 
+    /**
+     * Price cost
+     *
+     * @var string
+     */
+    public $cost = '';
+
 	/**
 	 * Price cost rates.
 	 *
@@ -42,6 +49,20 @@ class DPD_Parcels extends WC_Shipping_Method {
 	 * @var string
 	 */
 	public $terminal_field_value = '';
+
+    /**
+     * Terminal field name.
+     *
+     * @var string
+     */
+    public $terminal_field_name = '';
+
+    /**
+     * I18n selected terminal.
+     *
+     * @var string
+     */
+    public $i18n_selected_terminal = '';
 
 	/**
 	 * DpdShippingMethod constructor.
@@ -215,9 +236,11 @@ class DPD_Parcels extends WC_Shipping_Method {
 	 * @return void
 	 */
 	public function calculate_shipping( $package = array() ) {
+
 		$has_met_min_amount = false;
 		$cost               = $this->cost;
 		$weight             = WC()->cart ? WC()->cart->get_cart_contents_weight() : 0;
+
 
 		if ( WC()->cart && ! empty( $this->free_min_amount ) && $this->free_min_amount > 0 ) {
 			$total = WC()->cart->get_displayed_subtotal();
@@ -233,11 +256,14 @@ class DPD_Parcels extends WC_Shipping_Method {
 			}
 		}
 
+        $this->cost_rates = $this->get_option('cost_rates');
+
 		if ( 'weight' === $this->type ) {
-			$rates = explode( ',', $this->cost_rates );
+//			$rates = explode( ',', $this->cost_rates );
+            $rates = explode( ',', $this->cost_rates );
 
 			foreach ( $rates as $rate ) {
-				$data = explode( ':', $rate );
+                $data = explode( ':', $rate );
 
 				if ( $data[0] >= $weight ) {
 					if ( isset( $data[1] ) ) {
@@ -451,6 +477,8 @@ class DPD_Parcels extends WC_Shipping_Method {
 	 * @param array $data Data.
 	 */
 	public function checkout_save_order_terminal( $order_id, $data ) {
+
+
         $selected_terminal_value = WC()->session->get( 'terminal');
 
         if ($selected_terminal_value) {
