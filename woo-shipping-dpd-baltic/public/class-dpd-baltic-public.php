@@ -130,7 +130,7 @@ class Dpd_Baltic_Public {
 
 		$google_map_api = get_option( 'dpd_google_map_key' );
 
-//        wp_enqueue_script('wp-dpd-shipping-js', plugins_url('/js/dpd-pickup-points.js', __FILE__),
+//        wp_enqueue_script('wp-dpd-shipping-js', plugins_url('/js/dpd-pickup-points-old.js', __FILE__),
 //
 //            ['jquery'], $this->version, true);
 
@@ -358,12 +358,20 @@ class Dpd_Baltic_Public {
 	 * @return mixed
 	 */
 	public function add_cod_fee( WC_Cart $cart, $apply_fee = true ) {
-		if ( $apply_fee && ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
-			return;
-		}
+
+//		if ( $apply_fee && ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
+//			return;
+//		}
+
+        if ( is_admin() && ! wp_doing_ajax() ) {
+            return;
+        }
 
 		// Nonce already verify by woocommerce.
 		$payment_gateway = isset( $_POST['payment_method'] ) && 'cod' === $_POST['payment_method'] ? 'cod' : ''; // phpcs:ignore WordPress.Security.NonceVerification
+
+//        var_dump($payment_gateway);
+//        die();
 
 		if ( ! $payment_gateway ) {
 
@@ -380,20 +388,26 @@ class Dpd_Baltic_Public {
 			}
 		}
 
-		// Nonce already verify by woocommerce.
-		$chosen_shipping_methods = isset( $_POST['shipping_method'] ) && ! empty( $_POST['shipping_method'] ) ? wc_clean( wp_unslash( $_POST['shipping_method'] ) ) : ''; // phpcs:ignore
 
+
+		// Nonce already verify by woocommerce.
+		//$chosen_shipping_methods = isset( $_POST['shipping_method'] ) && ! empty( $_POST['shipping_method'] ) ? wc_clean( wp_unslash( $_POST['shipping_method'] ) ) : ''; // phpcs:ignore
+        $chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
 		if ( ! $chosen_shipping_methods ) {
-			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
 
 			if ( empty($chosen_shipping_methods) ) {
+
 				return;
 			}
 		}
 
+
+
 		if ( ! is_array($chosen_shipping_methods) ) {
 			return;
 		}
+
+
 
 		$current_shipping_method = explode( ':', $chosen_shipping_methods[0] );
 
@@ -410,6 +424,8 @@ class Dpd_Baltic_Public {
 			return;
 		}
 
+
+
 		if ( 'cod' !== $payment_gateway && $apply_fee ) {
 			return;
 		}
@@ -421,6 +437,8 @@ class Dpd_Baltic_Public {
 		$fee_p       = get_option( 'dpd_cod_fee_percentage' );
 		$extra_fee   = is_numeric( $fee ) ? $fee : 0;
 		$extra_fee_p = is_numeric( $fee_p ) ? $fee_p : 0;
+
+
 
 		if ( $extra_fee <= 0 && $extra_fee_p <= 0 ) {
 			return;

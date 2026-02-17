@@ -305,7 +305,9 @@ class Dpd
         $this->loader->add_action('wp_ajax_nopriv_dpd_store_pickup_selection', $this, 'dpd_save_pickup_location');
         $this->loader->add_action('wp_ajax_dpd_store_pickup_selection', $this, 'dpd_save_pickup_location');
 
-        $this->loader->add_action('woocommerce_store_api_checkout_update_order_from_request', $this, 'function_test');
+//        $this->loader->add_action('woocommerce_store_api_checkout_update_order_from_request', $this, 'function_test');
+        $this->loader->add_action('woocommerce_store_api_checkout_order_processed', $this, 'function_test');
+//        $this->loader->add_action('woocommerce_store_api_checkout_order_processed', $this, 'unset_pickup_point_selected_value');
 
         $this->loader->add_action('wp_ajax_nopriv_get_data', $this, 'get_terminal_classic_blocks');
         $this->loader->add_action('wp_ajax_get_data', $this, 'get_terminal_classic_blocks');
@@ -322,7 +324,35 @@ class Dpd
         $this->loader->add_action('wp_ajax_update_shipping_by_country', $this,'update_shipping_by_country_callback');
         $this->loader->add_action('wp_ajax_nopriv_update_shipping_by_country', $this,'update_shipping_by_country_callback');
 
+        $this->loader->add_filter('woocommerce_cart_shipping_method_full_label', $this,'dpd_logo', PHP_INT_MAX, 2);
 
+    }
+    public function dpd_logo($label, $method) {
+        if (str_contains($method->method_id, 'dpd')) {
+
+            $width = '100px';
+            $logo_url = plugins_url() . '/woo-shipping-dpd-baltic/public/images/dpd.png';
+
+            $carrier = 'dpd';
+
+            $img      = sprintf(
+
+                "<div class='dpd-carrier-icon-image-holder'><img class='multiparcels_carrier_icon multiparcels_carrier_icon_%s' src='%s' style='max-width: %s'></div>",
+
+                $carrier,
+
+                $logo_url,
+
+                $width
+
+            );
+
+            $label = sprintf("<div style='display: -webkit-box;display: -ms-flexbox;display: flex;-webkit-box-pack: justify;-ms-flex-pack: justify;justify-content: space-between;'>%s</div>", $label);
+
+            $label = $label . $img;
+
+            return $label;
+        }
     }
 
     public function update_shipping_by_country_callback()
@@ -515,9 +545,19 @@ class Dpd
         die;
 
     }
+
+    public function unset_pickup_point_selected_value() {
+        if(WC()->session) {
+            if (WC()->session->__isset('value')) {
+                WC()->session->__unset( 'value' );
+            }
+        }
+    }
     public function function_test($order) {
 
+        wc_clear_notices();
         if (WC()->session) {
+
             $value = WC()->session->get( 'value');
 
             $chosen_shipping_method = WC()->session->get( 'chosen_shipping_methods' )[0];
@@ -698,6 +738,8 @@ class Dpd
         $html .= '</div>';
 
         $html .= '</div>';
+
+        //Before update
 
 //        echo json_encode([
 //

@@ -350,7 +350,7 @@ class DPD_Parcels extends WC_Shipping_Method {
 				}
 			case 2:
 				foreach ( WC()->cart->get_cart() as $cart_item ) {
-					$temp_weight = $cart_item['data']->get_weight() * $cart_item['quantity'];
+					$temp_weight = (float)$cart_item['data']->get_weight() * $cart_item['quantity'];
 					array_push( $total_weight_of_cart, $temp_weight );
 				}
 				if ( !empty( $total_weight_of_cart ) && ( max( $total_weight_of_cart ) <= $max_pudo_weight ) ) {

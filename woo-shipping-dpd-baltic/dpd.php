@@ -14,7 +14,7 @@
  * @wordpress-plugin
  * Plugin Name:       DPD Baltic Shipping
  * Description:       DPD baltic shipping plugin for WooCommerce.
- * Version:           1.2.89
+ * Version:           1.2.90
  * Author:            DPD
  * Author URI:        https://dpd.com
  * License:           GPL-2.0+
@@ -24,7 +24,7 @@
  * Requires at least: 6.0
  * Tested up to: 6.8.3
  * WC requires at least: 8.2.0
- * WC tested up to: 10.3.5
+ * WC tested up to: 10.3.3
  */
 
 // If this file is called directly, abort.
@@ -37,7 +37,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'DPD_NAME_VERSION', '1.2.89' );
+define( 'DPD_NAME_VERSION', '1.2.90' );
 
 /**
  * Currently plugin name.
