@@ -328,7 +328,9 @@ class Dpd
 
     }
     public function dpd_logo($label, $method) {
-        if (str_contains($method->method_id, 'dpd')) {
+        $dpd_shipping_method = explode(':', $method->id)[0];
+
+        if ($dpd_shipping_method == 'dpd_home_delivery' || $dpd_shipping_method == 'dpd_sat_home_delivery' || $dpd_shipping_method == 'dpd_parcels' || $dpd_shipping_method == 'dpd_sameday_delivery' || $dpd_shipping_method == 'dpd_sameday_parcels') {
 
             $width = '100px';
             $logo_url = plugins_url() . '/woo-shipping-dpd-baltic/public/images/dpd.png';
@@ -337,7 +339,7 @@ class Dpd
 
             $img      = sprintf(
 
-                "<div class='dpd-carrier-icon-image-holder'><img class='multiparcels_carrier_icon multiparcels_carrier_icon_%s' src='%s' style='max-width: %s'></div>",
+                "<div class='dpd-carrier-icon-image-holder'><img class='dpd_carrier_icon dpd_carrier_icon_%s' src='%s' style='max-width: %s'></div>",
 
                 $carrier,
 
@@ -347,12 +349,13 @@ class Dpd
 
             );
 
-            $label = sprintf("<div style='display: -webkit-box;display: -ms-flexbox;display: flex;-webkit-box-pack: justify;-ms-flex-pack: justify;justify-content: space-between;'>%s</div>", $label);
+            //$label = sprintf("<div style='display: -webkit-box;display: -ms-flexbox;display: flex;-webkit-box-pack: justify;-ms-flex-pack: justify;justify-content: space-between;'>%s</div>", $label);
 
             $label = $label . $img;
 
-            return $label;
+
         }
+        return $label;
     }
 
     public function update_shipping_by_country_callback()

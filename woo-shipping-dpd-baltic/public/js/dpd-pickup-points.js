@@ -325,15 +325,15 @@ jQuery(document).ready(function() {
     });
 
 
-    $('#billing-city').on('change', function() {
+    $('#billing-city, #shipping-city').on('change', function() {
         dpdCheckoutWatcher();
     });
 
-    $('#billing-state').on('change', function() {
+    $('#billing-state, #shipping-state').on('change', function() {
         dpdCheckoutWatcher();
     });
 
-    $('#billing-postcode').on('change', function() {
+    $('#billing-postcode, #shipping-postcode ').on('change', function() {
         dpdCheckoutWatcher();
     });
 
