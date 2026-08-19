@@ -687,9 +687,9 @@ class DPD_Parcels extends WC_Shipping_Method {
 		    if (!in_array($country, $countries)) {
 		        return [];
             }
-			$terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s ORDER BY company", $country ) );
+			$terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND status=1 ORDER BY company", $country ) );
 		} else {
-			$terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals ORDER BY company" );
+			$terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE status=1 ORDER BY company" );
 		}
 
 		return $terminals;

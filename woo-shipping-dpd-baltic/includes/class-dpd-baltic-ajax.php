@@ -668,9 +668,9 @@ class Dpd_Baltic_Ajax {
 		global $wpdb;
 
 		if ( $country ) {
-			$terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s ORDER BY city", $country ) );
+			$terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE status = %d WHERE country = %s ORDER BY city", array(1, $country )  ) );
 		} else {
-			$terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals ORDER BY city" );
+			$terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE status = %d ORDER BY city", 1 );
 		}
 
 		return $terminals;

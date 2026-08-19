@@ -407,8 +407,9 @@ class Dpd
 
     public function get_ajax_search_pudo()
     {
-        $search_value = sanitize_text_field($_REQUEST['search_value']);
-
+        //
+//        $search_value = sanitize_text_field($_REQUEST['search_value']);
+        $search_value = sanitize_text_field($_REQUEST['q']);
 
 
 
@@ -485,25 +486,41 @@ class Dpd
         if (!count($grouped_terminals)) {
             $html .= '<li class="pudo" data-value="">' . esc_html( __( 'The Pickup Point is empty', 'woo-shipping-dpd-baltic' ) ) . '</li>';
         }else {
-            foreach ( $grouped_terminals as $group_name => $locations ) {
-                $html .= '<li class="group-pudo">' . esc_html( $group_name ) . '</li>';
-                foreach ($locations as $location ) {
+            //OLD
+//            foreach ( $grouped_terminals as $group_name => $locations ) {
+//                $html .= '<li class="group-pudo">' . esc_html( $group_name ) . '</li>';
+//                foreach ($locations as $location ) {
+//                    if ($location->status == '1') {
+//                        $html .= '<li class="pudo" data-cod="' . esc_attr( $location->cod ) . '" data-value="' . esc_html( $location->parcelshop_id ) .'">' . esc_html( $location->name ) . '</li>';
+//                    }
+//                }
+//            }
+//            if ($page != -1) {
+//                $class='';
+//            }else {
+//                $class='hidden';
+//            }
+//            $html .= '<div id="load-more-btn" class="' . $class .'" load-more-page="' . $page .'"><span class="load-more button">Load More</span></div>';
+            $results = [];
+
+            foreach ($grouped_terminals as $group_name => $locations) {
+                foreach ($locations as $location) {
                     if ($location->status == '1') {
-                        $html .= '<li class="pudo" data-cod="' . esc_attr( $location->cod ) . '" data-value="' . esc_html( $location->parcelshop_id ) .'">' . esc_html( $location->name ) . '</li>';
+                        $results[] = $location;
                     }
                 }
             }
-            if ($page != -1) {
-                $class='';
-            }else {
-                $class='hidden';
-            }
-            $html .= '<div id="load-more-btn" class="' . $class .'" load-more-page="' . $page .'"><span class="load-more button">Load More</span></div>';
         }
+
+//        echo json_encode([
+//
+//            'terminals'           => $html,
+//
+//        ]);
 
         echo json_encode([
 
-            'terminals'           => $html,
+            'terminals'           => $results,
 
         ]);
 
@@ -530,16 +547,16 @@ class Dpd
 //            $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s WHERE city LIKE '%warsz' ORDER BY city", $country ) );
             if ($search_text) {
 //                $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND city LIKE %s OR company like %s ORDER BY city", $country, $wpdb->esc_like( $search_text ) . '%', $wpdb->esc_like( $search_text ) . '%') );
-                $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND (company like %s or city LIKE %s or street like %s or pcode like %s)  ORDER BY city", $country, '%' . $wpdb->esc_like( $search_text ) . '%', $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%') );
+                $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND (company like %s or city LIKE %s or street like %s or pcode like %s)  AND status = 1 ORDER BY city", $country, '%' . $wpdb->esc_like( $search_text ) . '%', $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%') );
             }else {
-                $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s ORDER BY city", $country ) );
+                $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND status = 1 ORDER BY city", $country ) );
             }
 
         } else {
             if ($search_text) {
-                $terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE company LIKE %s or city LIKE %s or street like %s or pcode like %s ORDER BY city", '%' . $wpdb->esc_like( $search_text ) . '%', $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%'  );
+                $terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE company LIKE %s or city LIKE %s or street like %s or pcode like %s AND status = 1 ORDER BY city", '%' . $wpdb->esc_like( $search_text ) . '%', $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%'  );
             }else {
-                $terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals ORDER BY city" );
+                $terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE status = 1 ORDER BY city" );
             }
 
         }
@@ -626,12 +643,15 @@ class Dpd
 //        }
 
         if ( ! empty( $country ) ) {
+//            $sql = $wpdb->prepare(
+//                "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE status= %d AND country = %s ORDER BY city", array(1, $country)
+//            );
+
             $sql = $wpdb->prepare(
-                "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s ORDER BY city",
-                $country
+                "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND status = 1 ORDER BY city", $country
             );
         } else {
-            $sql = "SELECT * FROM {$wpdb->prefix}dpd_terminals ORDER BY city";
+            $sql = "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE status = 1 ORDER BY city";
         }
 
         $terminals = $wpdb->get_results( $sql );

@@ -142,7 +142,10 @@ class Dpd_Baltic_Public {
             wp_localize_script('wp-dpd-shipping-js', 'mySettings', [
                     //'nonce'    => wp_create_nonce('wp_rest')
                     'nonce'    => wp_create_nonce('wc_store_api'),
-                    'please_select_pickup_point_location' => __('Please select the pickup location', 'woo-shipping-dpd-baltic')
+                    'please_select_pickup_point_location' => __('Please select the pickup location', 'woo-shipping-dpd-baltic'),
+                    'search' => __('Search', 'woo-shipping-dpd-baltic'),
+                    'searching' => __('Searching', 'woo-shipping-dpd-baltic'),
+                    'noresults' => __('No results found', 'woo-shipping-dpd-baltic')
             ]);
 
         }
@@ -369,9 +372,6 @@ class Dpd_Baltic_Public {
 
 		// Nonce already verify by woocommerce.
 		$payment_gateway = isset( $_POST['payment_method'] ) && 'cod' === $_POST['payment_method'] ? 'cod' : ''; // phpcs:ignore WordPress.Security.NonceVerification
-
-//        var_dump($payment_gateway);
-//        die();
 
 		if ( ! $payment_gateway ) {
 

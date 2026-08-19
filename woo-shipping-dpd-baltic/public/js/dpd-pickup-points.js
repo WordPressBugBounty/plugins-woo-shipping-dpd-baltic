@@ -83,6 +83,19 @@ function setupDpdPickupPointSelect(selectedValue) {
     $select.select2({
         placeholder: mySettings.please_select_pickup_point_location,
         width: '100%',
+        language: {
+            search: function () {
+                return mySettings.search;
+            },
+
+            searching: function () {
+                return mySettings.searching;
+            },
+
+            noResults: function () {
+                return mySettings.noresults;
+            }
+        },
         ajax: {
             url: '/wp-admin/admin-ajax.php',
             type: 'POST',
@@ -334,7 +347,10 @@ jQuery(document).ready(function() {
     });
 
     $('#billing-postcode, #shipping-postcode ').on('change', function() {
-        dpdCheckoutWatcher();
+        setTimeout(() => {
+            dpdCheckoutWatcher();
+        }, 1500);
+
     });
 
     $(document.body).on("change", "#dpd-wc-pickup-point-shipping-select-block", function() {

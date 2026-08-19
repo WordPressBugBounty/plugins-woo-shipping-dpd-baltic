@@ -13,7 +13,7 @@
 			var search_value = $('.js--pudo-search').val();
 			// alert(placeholder);
 			$(".pickup-points-classic-select2").select2({
-				dropdownAutoWidth : true,
+				dropdownAutoWidth: false,
 				allowClear: true,
 				minimumInputLength: 0,
 				placeholder: placeholder,

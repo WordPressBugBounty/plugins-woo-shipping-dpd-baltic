@@ -591,6 +591,14 @@ msgstr ""
 msgid "Courier will arrive from:"
 msgstr ""
 
+#: includes/class-dpd.php:731
+msgid "Pickup location"
+msgstr ""
+
+#: includes/class-dpd.php:737
+msgid "Please select the pickup location"
+msgstr ""
+
 #: includes/class-dpd-baltic-ajax.php:144
 msgid "until"
 msgstr ""
@@ -608,6 +616,18 @@ msgstr ""
 
 #: public/class-dpd-baltic-public.php:297
 msgid "Cash on delivery fee"
+msgstr ""
+
+#: public/class-dpd-baltic-public.php:146
+msgid "Search"
+msgstr ""
+
+#: public/class-dpd-baltic-public.php:147
+msgid "Searching"
+msgstr ""
+
+#: public/class-dpd-baltic-public.php:148
+msgid "No results found"
 msgstr ""
 
 #: public/woocommerce/checkout/form-shipping-dpd-terminals-with-map.php:2 public/woocommerce/checkout/form-shipping-dpd-terminals.php:2

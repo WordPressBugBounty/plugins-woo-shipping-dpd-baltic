@@ -765,11 +765,17 @@ class Dpd_Admin {
         foreach ( $orders as $order ) {
             $order_id = $order->get_id();
             $products = $order->get_items();
+            $address2 = $order->get_shipping_address_2();
 
             // Fixing params for DPD.
             $name1  = $this->custom_length( $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name(), 40 ); // required 1, max length 40.
             $name2  = $this->custom_length( $order->get_shipping_company(), 40 ); // required 1, max length 40.
-            $street = $this->custom_length( $order->get_shipping_address_1(), 40 ); // required 1, max length 40.
+            if ($address2) {
+                $street = $this->custom_length( $order->get_shipping_address_1(). ' '. $address2, 40 ); // required 1, max length 40.
+            } else {
+                $street = $this->custom_length( $order->get_shipping_address_1(), 40 ); // required 1, max length 40.
+            }
+
             $city   = $this->custom_length( $order->get_shipping_city(), 40 ); // required 1, max length 40.
 
             $country_code = $order->get_shipping_country();
@@ -835,6 +841,8 @@ class Dpd_Admin {
                     foreach ( $products as $product ) {
                         $product_data = $product->get_product();
                         $weight       = $product_data->get_weight();
+
+                        $weight = (float)$weight;
                         if ( $weight >= 0 ) {
                             $product_weight += ( $weight / $divider ) * $product->get_quantity();
                         } else {

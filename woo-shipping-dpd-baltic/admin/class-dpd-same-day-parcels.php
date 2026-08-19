@@ -771,9 +771,9 @@ class DPD_Same_Day_Parcels extends WC_Shipping_Method {
 		global $wpdb;
 
 		if ( $country ) {
-			$terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s ORDER BY city", $country ) );
+			$terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND status = 1 ORDER BY city", $country ) );
 		} else {
-			$terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals ORDER BY city" );
+			$terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE status = 1 ORDER BY city" );
 		}
 
 		return $terminals;
