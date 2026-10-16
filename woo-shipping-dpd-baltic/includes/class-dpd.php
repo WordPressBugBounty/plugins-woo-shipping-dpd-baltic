@@ -380,191 +380,289 @@ class Dpd
         wp_send_json_success();
     }
 
-    public function set_ajax_delivery_shifts()
-    {
-        $selected_delivery_shift_value = sanitize_text_field($_REQUEST['delivery_shifts']);
+	public function set_ajax_delivery_shifts()
+	{
+		$selected_delivery_shift_value =
+			isset( $_REQUEST['delivery_shifts'] )
+				? sanitize_text_field( wp_unslash( $_REQUEST['delivery_shifts'] ) )
+				: '';
 
-        WC()->session->set( 'wc_shipping_dpd_home_delivery_shifts', $selected_delivery_shift_value );
-    }
+		WC()->session->set(
+			'wc_shipping_dpd_home_delivery_shifts',
+			$selected_delivery_shift_value
+		);
 
-    public function get_ajax_terminal_value()
-    {
-        $selected_terminal_value = sanitize_text_field($_REQUEST['selected_value']);
+		wp_die();
+	}
 
-        global $wpdb;
+	public function get_ajax_terminal_value()
+	{
+		$selected_terminal_value =
+			isset( $_REQUEST['selected_value'] )
+				? sanitize_text_field( wp_unslash( $_REQUEST['selected_value'] ) )
+				: '';
 
-        $terminal = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE parcelshop_id = %s", $selected_terminal_value ) );
+		if ( '' === $selected_terminal_value ) {
+			wp_die();
+		}
 
-        $terminal = json_decode(json_encode($terminal), true);
+		global $wpdb;
 
+		$terminal = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT company, street
+				FROM {$wpdb->prefix}dpd_terminals
+				WHERE parcelshop_id = %s
+				LIMIT 1",
+				$selected_terminal_value
+			),
+			ARRAY_A
+		);
 
+		if ( ! $terminal ) {
+			wp_die();
+		}
 
-        $terminal_name = $terminal[0]['company'] . ',' . $terminal[0]['street'];
+		$terminal_name = $terminal['company'] . ',' . $terminal['street'];
 
-        WC()->session->set( 'terminal', $selected_terminal_value );
-        WC()->session->set( 'terminal_name', $terminal_name );
-    }
+		WC()->session->set( 'terminal', $selected_terminal_value );
+		WC()->session->set( 'terminal_name', $terminal_name );
+
+		wp_die();
+	}
 
     public function get_ajax_search_pudo()
-    {
-        //
-//        $search_value = sanitize_text_field($_REQUEST['search_value']);
-        $search_value = sanitize_text_field($_REQUEST['q']);
+{
+    $search_value = isset( $_REQUEST['q'] )
+        ? sanitize_text_field( wp_unslash( $_REQUEST['q'] ) )
+        : '';
 
+    $chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
 
+    $limit = 100;
+    $page = 1;
+    $offset = $limit * ( $page - 1 );
 
-//        if (strpos($search_value, ' ') !== false && strpos($search_value, 'g.') === false) {
-//            $search_value_array = explode(" ", $search_value);
-//            $search_value = $search_value_array[0] . ' g. ' . $search_value_array[1];
-//        }
+    global $wpdb;
 
-        $chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+    $countries = get_option( 'dpd_parcels_countries', array( 'LT', 'LV', 'EE' ) );
 
-        $limit = 100;
-        $page = 1;
-        $offset = $limit * ($page - 1);
+    $items_per_page = $limit + 1;
 
-        global $wpdb;
+    $country = WC()->customer->get_shipping_country();
 
-        $countries = get_option( 'dpd_parcels_countries', array( 'LT', 'LV', 'EE' ) );
+    if ( $country ) {
+        if ( ! in_array( $country, $countries, true ) ) {
+            dpd_debug_log(
+                'FRONT-STORE: CHECKOUT PROCESS - no selected country is matching with countries in settings'
+            );
 
-        $items_per_page = $limit + 1;
+            wp_send_json(
+                array(
+                    'terminals' => array(),
+                )
+            );
+        }
 
+        $search_pattern = '%' . $wpdb->esc_like( $search_value ) . '%';
 
+        $terminals = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT *
+                FROM {$wpdb->prefix}dpd_terminals
+                WHERE country = %s
+                AND status = 1
+                AND (
+                    company LIKE %s
+                    OR city LIKE %s
+                    OR street LIKE %s
+                    OR pcode LIKE %s
+                )
+                ORDER BY company
+                LIMIT %d OFFSET %d",
+                $country,
+                $search_pattern,
+                $search_pattern,
+                $search_pattern,
+                $search_pattern,
+                $items_per_page,
+                $offset
+            )
+        );
+
+        dpd_debug_log(
+            sprintf(
+                'FRONT-STORE: CHECKOUT PROCESS - total terminals match with selected country: %d',
+                is_countable( $terminals ) ? count( $terminals ) : -1
+            )
+        );
+    } else {
+        $search_pattern = '%' . $wpdb->esc_like( $search_value ) . '%';
+
+        $terminals = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT *
+                FROM {$wpdb->prefix}dpd_terminals
+                WHERE status = 1
+                AND (
+                    company LIKE %s
+                    OR city LIKE %s
+                    OR street LIKE %s
+                    OR pcode LIKE %s
+                )
+                ORDER BY company
+                LIMIT %d OFFSET %d",
+                $search_pattern,
+                $search_pattern,
+                $search_pattern,
+                $search_pattern,
+                $items_per_page,
+                $offset
+            )
+        );
+
+        dpd_debug_log(
+            sprintf(
+                'FRONT-STORE: CHECKOUT PROCESS - total terminals are NOT matching with selected country: %d',
+                is_countable( $terminals ) ? count( $terminals ) : -1
+            )
+        );
+    }
+
+    $terminals_pagination = $terminals;
+
+    if ( count( $terminals_pagination ) > $limit ) {
+        array_pop( $terminals_pagination );
+    } else {
+        $page = -1;
+    }
+
+    $grouped_terminals = array();
+
+    foreach ( $terminals_pagination as $terminal ) {
+        if (
+            ! isset( $grouped_terminals[ $terminal->city ] )
+            && isset( $terminal->status )
+            && '1' === (string) $terminal->status
+        ) {
+            $grouped_terminals[ $terminal->city ] = array();
+        }
+
+        if ( isset( $terminal->status ) && '1' === (string) $terminal->status ) {
+            $grouped_terminals[ $terminal->city ][] = $terminal;
+        }
+    }
+
+    ksort( $grouped_terminals );
+
+    foreach ( $grouped_terminals as $group => $terminals ) {
+        foreach ( $terminals as $terminal_key => $terminal ) {
+            $terminal_formatted_name = $terminal->company . ', ' . $terminal->street;
+            $grouped_terminals[ $group ][ $terminal_key ]->name = $terminal_formatted_name;
+        }
+    }
+
+    $results = array();
+
+    foreach ( $grouped_terminals as $group_name => $locations ) {
+        foreach ( $locations as $location ) {
+            if ( '1' === (string) $location->status ) {
+                $results[] = $location;
+            }
+        }
+    }
+
+    wp_send_json(
+        array(
+            'terminals' => $results,
+        )
+    );
+}
+   public function get_terminal_classic_blocks() {
+    $search_text = isset( $_GET['q'] )
+        ? sanitize_text_field( wp_unslash( $_GET['q'] ) )
+        : '';
+
+    global $wpdb;
+
+    if ( WC()->customer->get_shipping_country() ) {
         $country = WC()->customer->get_shipping_country();
-
-
-        if ( $country ) {
-            if (!in_array($country, $countries)) {
-                dpd_debug_log("FRONT-STORE: CHECKOUT PROCESS - no selected country is matching with countries in settings");
-                return [];
-            }
-
-            $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND (company like %s or city LIKE %s or street like %s or pcode like %s) AND status = 1 ORDER BY company LIMIT %d OFFSET %d", $country, '%' . $wpdb->esc_like( $search_value ) . '%', $wpdb->esc_like( $search_value ) . '%', '%' .$wpdb->esc_like( $search_value ) . '%', '%' . $wpdb->esc_like( $search_value ) . '%', $items_per_page, $offset ) );
-            dpd_debug_log(sprintf("FRONT-STORE: CHECKOUT PROCESS - total terminals match with selected country: %d", is_countable($terminals) ? count( $terminals ) : -1));
-        } else {
-            $terminals = $wpdb->get_results( $wpdb->prepare("SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE status = 1 AND (company like %s or city LIKE %s or street like %s or pcode like %s) ORDER BY company LIMIT %d OFFSET %d", '%' . $wpdb->esc_like( $search_value ) . '%', $wpdb->esc_like( $search_value ) . '%', '%' . $wpdb->esc_like( $search_value ) . '%', '%' . $wpdb->esc_like( $search_value ) . '%', $items_per_page, $offset));
-            dpd_debug_log(sprintf("FRONT-STORE: CHECKOUT PROCESS - total terminals are NOT matching with selected country: %d", is_countable($terminals) ? count( $terminals ) : -1));
-
-        }
-
-        $terminals_pagination = $terminals;
-
-        if ( count( $terminals_pagination ) > $limit ) {
-            array_pop( $terminals_pagination );
-        } else {
-            $page = -1;
-        }
-
-        $grouped_terminals = array();
-
-        foreach ( $terminals_pagination as $terminal ) {
-
-            if ( ! isset( $grouped_terminals[ $terminal->city ] ) && isset( $terminal->status ) && $terminal->status == '1' ) {
-                $grouped_terminals[ $terminal->city ] = array();
-            }
-
-            if( isset( $terminal->status ) && $terminal->status == '1' ) {
-                $grouped_terminals[ $terminal->city ][] = $terminal;
-            }
-        }
-
-        ksort( $grouped_terminals );
-
-        foreach ( $grouped_terminals as $group => $terminals ) {
-            foreach ( $terminals as $terminal_key => $terminal ) {
-                $terminal_formatted_name = $terminal->company . ', ' . $terminal->street;
-                $grouped_terminals[ $group ][ $terminal_key ]->name = $terminal_formatted_name;
-            }
-        }
-
-        $terminal_field_name = 'wc_shipping_dpd_parcels_terminal';
-
-        $html = '';
-//        $html .= '<input type="text" class="js--pudo-search" value="' .  esc_html($search_value).'" style="width:100%; padding: 1rem;" placeholder="' . esc_html( __( 'Search', 'woo-shipping-dpd-baltic' ) )  .'">';
-
-        if (!count($grouped_terminals)) {
-            $html .= '<li class="pudo" data-value="">' . esc_html( __( 'The Pickup Point is empty', 'woo-shipping-dpd-baltic' ) ) . '</li>';
-        }else {
-            //OLD
-//            foreach ( $grouped_terminals as $group_name => $locations ) {
-//                $html .= '<li class="group-pudo">' . esc_html( $group_name ) . '</li>';
-//                foreach ($locations as $location ) {
-//                    if ($location->status == '1') {
-//                        $html .= '<li class="pudo" data-cod="' . esc_attr( $location->cod ) . '" data-value="' . esc_html( $location->parcelshop_id ) .'">' . esc_html( $location->name ) . '</li>';
-//                    }
-//                }
-//            }
-//            if ($page != -1) {
-//                $class='';
-//            }else {
-//                $class='hidden';
-//            }
-//            $html .= '<div id="load-more-btn" class="' . $class .'" load-more-page="' . $page .'"><span class="load-more button">Load More</span></div>';
-            $results = [];
-
-            foreach ($grouped_terminals as $group_name => $locations) {
-                foreach ($locations as $location) {
-                    if ($location->status == '1') {
-                        $results[] = $location;
-                    }
-                }
-            }
-        }
-
-//        echo json_encode([
-//
-//            'terminals'           => $html,
-//
-//        ]);
-
-        echo json_encode([
-
-            'terminals'           => $results,
-
-        ]);
-
-        wp_die();
+    } elseif ( WC()->customer->get_billing_country() ) {
+        $country = WC()->customer->get_billing_country();
+    } else {
+        $country = false;
     }
-    public function get_terminal_classic_blocks() {
-        $search_text = $_GET['q'];
 
+    if ( $country ) {
+        if ( $search_text ) {
+            $search_pattern = '%' . $wpdb->esc_like( $search_text ) . '%';
 
-        global $wpdb;
-
-        if ( WC()->customer->get_shipping_country()) {
-            $country = WC()->customer->get_shipping_country();
-        }elseif(WC()->customer->get_billing_country()){
-            $country = WC()->customer->get_billing_country();
-        }else {
-            $country = false;
-        }
-
-
-
-        if ( $country ) {
-
-//            $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s WHERE city LIKE '%warsz' ORDER BY city", $country ) );
-            if ($search_text) {
-//                $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND city LIKE %s OR company like %s ORDER BY city", $country, $wpdb->esc_like( $search_text ) . '%', $wpdb->esc_like( $search_text ) . '%') );
-                $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND (company like %s or city LIKE %s or street like %s or pcode like %s)  AND status = 1 ORDER BY city", $country, '%' . $wpdb->esc_like( $search_text ) . '%', $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%') );
-            }else {
-                $terminals = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE country = %s AND status = 1 ORDER BY city", $country ) );
-            }
-
+            $terminals = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT *
+                    FROM {$wpdb->prefix}dpd_terminals
+                    WHERE country = %s
+                    AND status = 1
+                    AND (
+                        company LIKE %s
+                        OR city LIKE %s
+                        OR street LIKE %s
+                        OR pcode LIKE %s
+                    )
+                    ORDER BY city",
+                    $country,
+                    $search_pattern,
+                    $search_pattern,
+                    $search_pattern,
+                    $search_pattern
+                )
+            );
         } else {
-            if ($search_text) {
-                $terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE company LIKE %s or city LIKE %s or street like %s or pcode like %s AND status = 1 ORDER BY city", '%' . $wpdb->esc_like( $search_text ) . '%', $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%', '%' . $wpdb->esc_like( $search_text ) . '%'  );
-            }else {
-                $terminals = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}dpd_terminals WHERE status = 1 ORDER BY city" );
-            }
-
+            $terminals = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT *
+                    FROM {$wpdb->prefix}dpd_terminals
+                    WHERE country = %s
+                    AND status = 1
+                    ORDER BY city",
+                    $country
+                )
+            );
         }
+    } else {
+        if ( $search_text ) {
+            $search_pattern = '%' . $wpdb->esc_like( $search_text ) . '%';
 
-        echo json_encode( $terminals );
-        die;
-
+            $terminals = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT *
+                    FROM {$wpdb->prefix}dpd_terminals
+                    WHERE status = 1
+                    AND (
+                        company LIKE %s
+                        OR city LIKE %s
+                        OR street LIKE %s
+                        OR pcode LIKE %s
+                    )
+                    ORDER BY city",
+                    $search_pattern,
+                    $search_pattern,
+                    $search_pattern,
+                    $search_pattern
+                )
+            );
+        } else {
+            $terminals = $wpdb->get_results(
+                "SELECT *
+                FROM {$wpdb->prefix}dpd_terminals
+                WHERE status = 1
+                ORDER BY city"
+            );
+        }
     }
+
+    wp_send_json( $terminals );
+}
 
     public function unset_pickup_point_selected_value() {
         if(WC()->session) {
@@ -615,12 +713,19 @@ class Dpd
     }
 
     public function dpd_save_pickup_location()
-    {
-        $value = $_REQUEST['value'];
+	{
+		if ( ! isset( $_REQUEST['value'] ) ) {
+			wp_die();
+		}
 
-        WC()->session->set( 'value', $value );
-    }
+		$value = sanitize_text_field(
+			wp_unslash( $_REQUEST['value'] )
+		);
 
+		WC()->session->set( 'value', $value );
+
+		wp_die();
+	}
     /**
      * Load more items.
      *
@@ -632,7 +737,9 @@ class Dpd
 
 
 
-        $country = $_REQUEST['country_code'];
+        $country = isset( $_REQUEST['country_code'] )
+			? sanitize_text_field( wp_unslash( $_REQUEST['country_code'] ) )
+			: '';
 
 
 
@@ -779,7 +886,10 @@ class Dpd
     }
     public function load_more_pudos()
     {
-        $page = isset($_POST['page']) ? absint($_POST['page']) : 1;
+		$page = isset( $_POST['page'] )
+			? absint( wp_unslash( $_POST['page'] ) )
+			: 1;
+			
         $limit = 500;
 //        $limit = 100;
 

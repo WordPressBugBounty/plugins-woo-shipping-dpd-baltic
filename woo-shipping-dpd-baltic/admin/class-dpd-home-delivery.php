@@ -175,30 +175,36 @@ class DPD_Home_Delivery extends WC_Shipping_Method {
 	 */
 	public function get_instance_form_fields() {
 		if ( is_admin() ) {
-			wc_enqueue_js(
-				'jQuery( function( $ ) {
-					function wc' . $this->id . "ShowHideRatesField( el ) {
-						var form = $( el ).closest( 'form' );
-						var ratesField = $( '#woocommerce_" . $this->id . "_cost_rates', form ).closest( 'tr' );
-						if ( 'weight' !== $( el ).val() || '' === $( el ).val() ) {
-							ratesField.hide();
-						} else {
-							ratesField.show();
-						}
+			$js = 'jQuery( function( $ ) {
+				function wc' . $this->id . "ShowHideRatesField( el ) {
+					var form = $( el ).closest( 'form' );
+					var ratesField = $( '#woocommerce_" . $this->id . "_cost_rates', form ).closest( 'tr' );
+
+					if ( 'weight' !== $( el ).val() || '' === $( el ).val() ) {
+						ratesField.hide();
+					} else {
+						ratesField.show();
 					}
+				}
 
-					$( document.body ).on( 'change', '#woocommerce_" . $this->id . "_type', function() {
-						wc" . $this->id . "ShowHideRatesField( this );
-					});
+				$( document.body ).on( 'change', '#woocommerce_" . $this->id . "_type', function() {
+					wc" . $this->id . "ShowHideRatesField( this );
+				});
 
-					// Change while load.
-					$( '#woocommerce_" . $this->id . "_type' ).change();
-					$( document.body ).on( 'wc_backbone_modal_loaded', function( evt, target ) {
-						if ( 'wc-modal-shipping-method-settings' === target ) {
-							wc" . $this->id . "ShowHideRatesField( $( '#wc-backbone-modal-dialog #woocommerce_" . $this->id . "_type', evt.currentTarget ) );
-						}
-					} );
-				});"
+				$( '#woocommerce_" . $this->id . "_type' ).change();
+
+				$( document.body ).on( 'wc_backbone_modal_loaded', function( evt, target ) {
+					if ( 'wc-modal-shipping-method-settings' === target ) {
+						wc" . $this->id . "ShowHideRatesField(
+							$( '#wc-backbone-modal-dialog #woocommerce_" . $this->id . "_type', evt.currentTarget )
+						);
+					}
+				});
+			});";
+
+			wp_add_inline_script(
+				'woo-shipping-dpd-baltic',
+				$js
 			);
 		}
 

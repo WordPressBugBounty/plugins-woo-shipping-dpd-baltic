@@ -373,9 +373,6 @@ class Dpd_Baltic_Public {
 		// Nonce already verify by woocommerce.
 		$payment_gateway = isset( $_POST['payment_method'] ) && 'cod' === $_POST['payment_method'] ? 'cod' : ''; // phpcs:ignore WordPress.Security.NonceVerification
 
-//        var_dump($payment_gateway);
-//        die();
-
 		if ( ! $payment_gateway ) {
 
 			$payment_gateway = WC()->session->get( 'chosen_payment_method' );

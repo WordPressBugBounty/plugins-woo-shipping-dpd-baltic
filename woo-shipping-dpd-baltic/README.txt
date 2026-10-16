@@ -3,11 +3,11 @@ Contributors: DPD
 Donate link: https://dpd.com
 Tags: woocommerce, shipping, dpd, parcels
 Requires at least: 6.0
-Tested up to: 6.9.4
-Stable tag: 1.2.93
+Tested up to: 7.1
+Stable tag: 1.2.94
 Requires PHP: 7.4
 WC requires at least: 8.2.0
-WC tested up to: 10.6.1
+WC tested up to: 11.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -91,7 +91,19 @@ LT - 1000 EUR, LV - 1200 EUR, EE - 1278 EUR. If order’s total sum is above thi
 4. Shipping zones.
 5. Shipping method settings.
 
-== Changelog === 1.2.93 =* Bug Fix - Fix Pickup Points not being displayed correctly on the map.* Bug Fix - Improve DPD Courier API error response handling.
+== Changelog ==
+
+= 1.2.94 =
+* Bug Fix - Fix PUDO pickup point search not returning results.
+* Security Fix - Remove an unwanted file included in the previous plugin release.
+* Security Fix - Improve AJAX request validation and input sanitization.
+* Security Fix - Improve database query handling.
+* Security Fix - Remove obsolete debug endpoints.
+* Compatibility Fix - Replace deprecated WooCommerce wc_enqueue_js usage.
+
+= 1.2.93 =
+* Bug Fix - Fix Pickup Points not being displayed correctly on the map.
+* Bug Fix - Improve DPD Courier API error response handling.
 
 = 1.2.92 =
 * Fix translatable lines

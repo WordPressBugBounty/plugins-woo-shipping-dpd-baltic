@@ -158,19 +158,6 @@ CREATE TABLE IF NOT EXISTS {$wpdb->prefix}dpd_terminals (
 			}
 		}
 
-        if(isset ($_GET['check-dpd-terminals-table'])){
-            global $wpdb;
-            $table = $wpdb->prefix . 'dpd_terminals';
-            $results = $wpdb->get_results("SELECT * FROM $table LIMIT 1", ARRAY_A);
-            print_r(json_decode(json_encode($results),true));
-            wp_die("Debugging - check-dpd-terminals-table");
-        }
-
-        if(isset ($_GET['force-dpd-tables-update'])){
-            self::terminalsAddStatusColumn();
-            wp_die("DPD database tables have been updated successfully! Please come back to your dashboard and continue your work.");
-        }
-
 		if ( DPD_NAME_VERSION != $installed_version ) {
 			delete_option( 'wc_shipping_dpd_baltic_db_version' );
 			add_option( 'wc_shipping_dpd_baltic_db_version', DPD_NAME_VERSION );

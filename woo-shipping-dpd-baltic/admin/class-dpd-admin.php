@@ -186,6 +186,9 @@ class Dpd_Admin {
                 return $response->get_error_message();
             } else {
                 $body = wp_remote_retrieve_body( $response );
+				if ( 'parcelShopSearch_' === $endpoint ) {
+					error_log( 'DPD parcelShopSearch_ raw response: ' . $body );
+				}
                 if ( 'parcelPrint_' === $endpoint || 'parcelManifestPrint_' === $endpoint || 'crImport_' === $endpoint ) {
                     return $body;
                 }
@@ -336,44 +339,48 @@ class Dpd_Admin {
         );
 
         if ( ! $this->get_order_barcode( $order_id ) ) {
-            if ( ( $order->has_shipping_method( self::HOME ) || $order->has_shipping_method( self::HOME_SAT ) || $order->has_shipping_method( self::SAME_DAY ) ) ) {
-                if ( get_option( 'dpd_rod_service' ) === 'yes' ) {
-                    woocommerce_wp_checkbox(
-                        array(
-                            'id'          => 'dpd_shipping_return',
-                            'label'       => '',
-                            'placeholder' => '',
-                            'description' => __( 'Activate document return service?', 'woo-shipping-dpd-baltic' ),
-                            'cbvalue'     => 'yes',
-                        )
-                    );
+			if (
+				$order->has_shipping_method( self::HOME )
+				|| $order->has_shipping_method( self::HOME_SAT )
+				|| $order->has_shipping_method( self::SAME_DAY )
+			) {
+				if ( get_option( 'dpd_rod_service' ) === 'yes' ) {
+					woocommerce_wp_checkbox(
+						array(
+							'id'          => 'dpd_shipping_return',
+							'label'       => '',
+							'placeholder' => '',
+							'description' => __( 'Activate document return service?', 'woo-shipping-dpd-baltic' ),
+							'cbvalue'     => 'yes',
+						)
+					);
 
-                    woocommerce_wp_text_input(
-                        array(
-                            'id'          => 'dpd_shipping_note',
-                            'label'       => __( 'Document reference number', 'woo-shipping-dpd-baltic' ) . ' *',
-                            'placeholder' => '',
-                            'description' => '',
-                        )
-                    );
+					woocommerce_wp_text_input(
+						array(
+							'id'          => 'dpd_shipping_note',
+							'label'       => __( 'Document reference number', 'woo-shipping-dpd-baltic' ) . ' *',
+							'placeholder' => '',
+							'description' => '',
+						)
+					);
 
-                    $js = "
-							jQuery('input#dpd_shipping_return').change(function() {
-								if ( jQuery(this).prop('checked') ) {
-									jQuery('p.dpd_shipping_note_field').show();
-								} else {
-									jQuery('p.dpd_shipping_note_field').hide();
-								}
-							}).change();";
+					$js = "
+						jQuery('input#dpd_shipping_return').change(function() {
+							if ( jQuery(this).prop('checked') ) {
+								jQuery('p.dpd_shipping_note_field').show();
+							} else {
+								jQuery('p.dpd_shipping_note_field').hide();
+							}
+						}).change();
+					";
 
-                    if ( function_exists( 'wc_enqueue_js' ) ) {
-                        wc_enqueue_js( $js );
-                    } else {
-                        $woocommerce->add_inline_js( $js );
-                    }
-                }
-            }
-        }
+					wp_add_inline_script(
+						'woo-shipping-dpd-baltic',
+						$js
+					);
+				}
+			}
+		}
 
         if ( $order->is_paid() && ! ( $order->has_shipping_method( self::PARCELS ) || $order->has_shipping_method( self::PARCELS_SAME_DAY ) ) && $this->get_order_barcode( $order_id ) ) {
             woocommerce_wp_select(
@@ -1286,30 +1293,62 @@ class Dpd_Admin {
      * @param array $data Data.
      * @param string $country
      */
-    private static function update_parcels_list( $data = array(), $country = '' ) {
-        global $wpdb;
-        $wpdb->show_errors();
+private static function update_parcels_list( $data = array(), $country = '' ) {
+	global $wpdb;
 
-        if ( !empty( $country ) ) {
-            $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->prefix}dpd_terminals SET status = 0 WHERE country = '%s'", $country ) );
-        }
-        foreach ( $data as $parcelshop ) {
-            $results = $wpdb->get_results(
-                $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}dpd_terminals WHERE parcelshop_id=%s", $parcelshop['parcelshop_id'] )
-            );
-            $parcelshop['status'] = 1;
-            if ( ! empty( $results ) ) {
-                $wpdb->update( $wpdb->prefix . 'dpd_terminals', $parcelshop, array( 'parcelshop_id' => $parcelshop['parcelshop_id'] ) );
-            } else {
-                $wpdb->insert( $wpdb->prefix . 'dpd_terminals', $parcelshop );
-            }
-        }
-        $totalParcelsByCountry = $wpdb->get_results(
-            $wpdb->prepare( "SELECT count(id) as 'total_item' FROM {$wpdb->prefix}dpd_terminals WHERE country=%s", $country )
-            , ARRAY_A);
-        dpd_debug_log(sprintf("Total Items are there in database - table - dpd_terminals: %s", !empty($totalParcelsByCountry) ? $totalParcelsByCountry[0]['total_item'] : "N/A"));
+	$wpdb->show_errors();
 
-    }
+	if ( ! empty( $country ) ) {
+		$wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->prefix}dpd_terminals SET status = 0 WHERE country = %s",
+				$country
+			)
+		);
+	}
+
+	foreach ( $data as $parcelshop ) {
+
+		if ( ! isset( $parcelshop['distance'] ) || null === $parcelshop['distance'] ) {
+			$parcelshop['distance'] = 0;
+		}
+
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id FROM {$wpdb->prefix}dpd_terminals WHERE parcelshop_id = %s",
+				$parcelshop['parcelshop_id']
+			)
+		);
+
+		$parcelshop['status'] = 1;
+
+		if ( ! empty( $results ) ) {
+			$wpdb->update(
+				$wpdb->prefix . 'dpd_terminals',
+				$parcelshop,
+				array(
+					'parcelshop_id' => $parcelshop['parcelshop_id'],
+				)
+			);
+		} else {
+			$wpdb->insert(
+				$wpdb->prefix . 'dpd_terminals',
+				$parcelshop
+			);
+		}
+	}
+
+	$totalParcelsByCountry = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT count(id) as 'total_item'
+			FROM {$wpdb->prefix}dpd_terminals
+			WHERE country = %s",
+			$country
+		),
+		ARRAY_A
+	);
+
+}
 
     /**
      * Custom length.

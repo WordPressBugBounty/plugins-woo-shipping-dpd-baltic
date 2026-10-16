@@ -325,13 +325,13 @@ class DPD_Same_Day_Delivery extends WC_Shipping_Method {
 	 *
 	 * @return array
 	 */
-	public function get_instance_form_fields() {
-		if ( is_admin() ) {
-			wc_enqueue_js(
-				'jQuery( function( $ ) {
+		public function get_instance_form_fields() {
+			if ( is_admin() ) {
+				$js = 'jQuery( function( $ ) {
 					function wc' . $this->id . "ShowHideRatesField( el ) {
 						var form = $( el ).closest( 'form' );
 						var ratesField = $( '#woocommerce_" . $this->id . "_cost_rates', form ).closest( 'tr' );
+
 						if ( 'weight' !== $( el ).val() || '' === $( el ).val() ) {
 							ratesField.hide();
 						} else {
@@ -345,17 +345,24 @@ class DPD_Same_Day_Delivery extends WC_Shipping_Method {
 
 					// Change while load.
 					$( '#woocommerce_" . $this->id . "_type' ).change();
+
 					$( document.body ).on( 'wc_backbone_modal_loaded', function( evt, target ) {
 						if ( 'wc-modal-shipping-method-settings' === target ) {
-							wc" . $this->id . "ShowHideRatesField( $( '#wc-backbone-modal-dialog #woocommerce_" . $this->id . "_type', evt.currentTarget ) );
+							wc" . $this->id . "ShowHideRatesField(
+								$( '#wc-backbone-modal-dialog #woocommerce_" . $this->id . "_type', evt.currentTarget )
+							);
 						}
 					} );
-				});"
-			);
-		}
+				});";
 
-		return parent::get_instance_form_fields();
-	}
+				wp_add_inline_script(
+					'woo-shipping-dpd-baltic',
+					$js
+				);
+			}
+
+			return parent::get_instance_form_fields();
+		}
 
 	/**
 	 * This function is used to calculate the shipping cost. Within this function we can check for weights, dimensions and other parameters.
